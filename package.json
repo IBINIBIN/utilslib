@@ -1,0 +1,16 @@
+{
+  "name": "lazy-dog-lib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "doc:dev": "typedoc --options config/typedoc.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^10.3.10",
+    "typedoc": "^0.25.2"
+  }
+}
