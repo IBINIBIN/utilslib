@@ -1,16 +1,30 @@
 {
-  "name": "lazy-dog-lib",
+  "name": "@lazy/monorepo",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "doc:dev": "typedoc --options config/typedoc.config.js"
+    "doc:dev": "typedoc --options config/typedoc.config.js --watch",
+    "build:doc": "typedoc --options config/typedoc.config.js",
+    "build": "rollup -c"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.23.2",
+    "@babel/preset-env": "^7.23.2",
     "glob": "^10.3.10",
+    "rollup-plugin-clear": "^2.0.7",
     "typedoc": "^0.25.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rollup": "^4.1.4",
+    "tslib": "^2.6.2"
   }
 }
