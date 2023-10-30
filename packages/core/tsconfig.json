@@ -1,0 +1,10 @@
+{
+  "extends": ["../../tsconfig.json"],
+  "include": ["./src/*"],
+  "compilerOptions": {
+    // "outFile": "dist/index.d.ts",
+    // "outDir": "dist/types",
+    "target": "ES6",
+    "lib": ["ESNext","DOM"]
+  }
+}

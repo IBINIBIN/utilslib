@@ -10,14 +10,18 @@ function getType(value: unknown): string {
 }
 
 /**
- * 检查一个值是否不为 Undefined 类型。
+ * 检查一个值是否已定义
+ * 注: 非「undefined」类型
  *
  * @param value - 要检查的值。
  * @returns 如果值不为 Undefined 类型，则返回 true，否则返回 false。
  */
-export function isDef(value: unknown): value is undefined {
+export function isDef<T extends any>(value?: T): value is T {
   return typeof value !== "undefined";
 }
+// export const  isDef = <T extends any>(value?: T): value is T =>{
+//   return typeof value !== "undefined";
+// }
 
 /**
  * 检查一个值是否为 Undefined 类型。
@@ -179,7 +183,7 @@ export function isWindow(value: any): boolean {
   return typeof window !== "undefined" && getType(value) === "Window";
 }
 
-/*======================================= 类型检查方法 -- end =======================================*/
+/*---------------------------------------  类型检查方法 -- end  ---------------------------------------*/
 
 /*========================================== is公共方法 ==========================================*/
 
