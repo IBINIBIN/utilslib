@@ -1,10 +1,19 @@
 {
   "name": "@lazy/core",
   "version": "0.0.1",
-  "description": "sandioesgoi",
-  "main": "index.js",
+  "type": "module",
+  "description": "",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c"
   },
   "keywords": ["javascript", "util"],
   "author": "",

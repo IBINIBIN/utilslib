@@ -1,12 +1,13 @@
 // import { glob, globSync, globStream, globStreamSync, Glob } from 'glob'
-const path = require("path");
-const { globSync } = require("glob");
+import path from "node:path";
+import {fileURLToPath} from 'node:url'
+import { globSync } from "glob";
 
 /** @type {import('typedoc').TypeDocOptions} */
-module.exports = {
+export default {
   $schema: "https://typedoc.org/schema.json",
-  entryPoints: globSync("packages/*/src/**.ts").map((item) => "../" + item),
-  out: "docs",
+  entryPoints: globSync("packages/*/src/index.ts").map((item) => "../" + item),
+  out: path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'docs'),
   githubPages: true,
   hideGenerator: true,
   // name: "Runtime data validation for TypeScript",
@@ -22,7 +23,7 @@ module.exports = {
   // version:true,
   includeVersion: true,
   searchInComments: true,
-  emit: "both",
+  // emit: "both",
 
   navigation: {
     includeCategories: true,
@@ -30,7 +31,7 @@ module.exports = {
   },
   categorizeByGroup: false,
 
-  json: "docs/config.json",
+  // json: "docs/config.json",
   navigationLeaves: ["src"],
   // hideParameterTypesInTitle: true
 };
