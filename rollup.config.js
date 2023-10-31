@@ -1,25 +1,66 @@
-// rollup.config.js
-// import { RollupOptions } from "rollup";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import clear from "rollup-plugin-clear";
+import esbuild from "rollup-plugin-esbuild";
 import resolve from "@rollup/plugin-node-resolve";
 
 import typescript from "@rollup/plugin-typescript";
-import terser from "@rollup/plugin-terser";
 import { globSync } from "glob";
 
 const fileName = fileURLToPath(new URL(import.meta.url));
-const r = (...url) => path.resolve(fileName, "..", ...url);
+const dirName = fileURLToPath(new URL(".", import.meta.url));
+const r = (...url) => path.resolve(dirName, ...url);
 
+/** 所有子包的入口文件 */
 const globalEnterFile = globSync("packages/*/src/index.ts");
 console.log(`globalEnterFile: `, globalEnterFile);
 
+/** 获取子包的dist文件夹路径 */
 const getPackageDistPath = (url) => path.resolve(url, "../..", "dist");
 
-/** @type {import('rollup').RollupOptions} */
-export default globalEnterFile.map((enter) => {
+const createOutputList = (name, enter) => {
+  const outputConfigs = {
+    cjs: {
+      name,
+      format: "cjs",
+    },
+    esm: {
+      name,
+      format: "es",
+    },
+    global: {
+      name,
+      format: "iife",
+    },
+  };
+
+  const distOutputList = Object.entries(outputConfigs).map(
+    ([format, config]) => {
+      return {
+        ...config,
+        file: path.resolve(getPackageDistPath(enter), `index.${format}.js`),
+      };
+    }
+  );
+
+  const libOutputList = Object.entries(outputConfigs).map(
+    ([format, config]) => {
+      return {
+        ...config,
+        file: r(
+          "lib",
+          path.basename(path.resolve(enter, "../..")),
+          `index.${format}.js`
+        ),
+      };
+    }
+  );
+
+  return [distOutputList, libOutputList];
+};
+
+const createConfig = (enter) => {
   const { name } = JSON.parse(
     readFileSync(
       path.resolve(getPackageDistPath(enter), "..", "package.json"),
@@ -34,34 +75,46 @@ export default globalEnterFile.map((enter) => {
 
   const packageBundleName = `_${packageName}${letterUp(subPackageName)}`;
 
-  return {
-    input: enter,
-    output: [
-      {
-        name: packageBundleName,
-        file: path.resolve(getPackageDistPath(enter), "index.cjs.js"),
-        format: "cjs",
-      },
-      {
-        name: packageBundleName,
-        file: path.resolve(getPackageDistPath(enter), "index.es.js"),
-        format: "es",
-      },
-      {
-        name: packageBundleName,
-        file: path.resolve(getPackageDistPath(enter), "index.global.js"),
-        format: "iife",
-      },
-    ],
-    plugins: [
-      resolve(),
-      typescript({
-        tsconfig: path.resolve(enter, "../..", 'tsconfig.json'),
-        outDir: path.resolve(enter, "../..", "dist/types"),
-      }),
-      clear({
-        targets: [getPackageDistPath(enter)],
-      }),
-    ],
-  };
-});
+  const basePlugins = [resolve()];
+
+  return [
+    {
+      input: enter,
+      output: createOutputList(packageBundleName, enter)[0],
+      plugins: [
+        ...basePlugins,
+        typescript({
+          target: "ES6",
+          include: [`packages/${subPackageName}/src/*`],
+          declarationDir: path.resolve(getPackageDistPath(enter), "types"),
+        }),
+        esbuild({
+          minify: process.env.NODE_ENV === "production",
+        }),
+        clear({
+          targets: [getPackageDistPath(enter)],
+        }),
+      ],
+    },
+    {
+      input: enter,
+      output: createOutputList(packageBundleName, enter)[1],
+      plugins: [
+        ...basePlugins,
+        typescript({
+          target: "ESNext",
+          include: [`packages/${subPackageName}/src/*`],
+          outDir: r("lib", subPackageName, "types"),
+        }),
+        clear({
+          targets: [r("lib", subPackageName)],
+        }),
+      ],
+    },
+  ];
+};
+
+/** @type {import('rollup').RollupOptions} */
+export default globalEnterFile
+  .map((enter) => createConfig(enter))
+  .flat(Infinity);
