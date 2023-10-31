@@ -1,12 +1,12 @@
 {
-  "name": "@lazy/monorepo",
-  "version": "1.0.0",
+  "name": "@lazyhome/monorepo",
+  "version": "0.0.1",
   "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "doc:dev": "typedoc --options config/typedoc.config.js --watch",
-    "build:doc": "typedoc --options config/typedoc.config.js",
+    "doc:dev": "typedoc --options config/typedoc.config.js --watch packages/**",
+    "build:doc": "typedoc --options config/typedoc.config.js --searchInComments",
     "build": "rollup -c"
   },
   "keywords": [],

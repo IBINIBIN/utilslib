@@ -1,6 +1,6 @@
 /*====================================== 类型检查方法 -- start ======================================*/
 /**
- * 获取值的类型字符串。
+ * onsdfljfosiej
  *
  * @param value - 要获取类型的值。
  * @returns 值的类型字符串。
@@ -19,9 +19,6 @@ function getType(value: unknown): string {
 export function isDef<T extends any>(value?: T): value is T {
   return typeof value !== "undefined";
 }
-// export const  isDef = <T extends any>(value?: T): value is T =>{
-//   return typeof value !== "undefined";
-// }
 
 /**
  * 检查一个值是否为 Undefined 类型。
