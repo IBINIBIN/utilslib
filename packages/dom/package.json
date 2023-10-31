@@ -2,10 +2,16 @@
   "name": "@lazyhome/dom",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js"
+    }
   },
+  "scripts": {},
   "keywords": ["javascript", "util", "dom"],
   "author": "jb <ibin@qq.com>",
   "license": "MIT",

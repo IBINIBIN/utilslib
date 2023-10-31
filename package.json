@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "type": "module",
   "description": "",
+  "engines": {
+    "node": ">=16",
+    "pnpm": "8"
+  },
   "scripts": {
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
     "build:doc": "typedoc --options config/typedoc.config.js",
