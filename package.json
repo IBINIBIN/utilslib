@@ -3,20 +3,19 @@
   "version": "0.0.1",
   "type": "module",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "doc:dev": "typedoc --options config/typedoc.config.js --watch packages/**",
-    "build:doc": "typedoc --options config/typedoc.config.js --searchInComments",
-    "build": "rollup -c"
+    "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
+    "build:doc": "typedoc --options config/typedoc.config.js",
+    "build": "cross-env NODE_ENV=production rollup -c"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
+    "cross-env": "^7.0.3",
     "glob": "^10.3.10",
     "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-esbuild": "^6.1.0",
     "typedoc": "^0.25.2"
   },
   "devDependencies": {
