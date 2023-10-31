@@ -6,10 +6,20 @@ import { globSync } from "glob";
 /** @type {import('typedoc').TypeDocOptions} */
 export default {
   $schema: "https://typedoc.org/schema.json",
+  // entryPointStrategy: 'resolve',
   entryPoints: globSync("packages/*/src/index.ts").map((item) => "../" + item),
+  // entryPoints: globSync("packages/*").map((item) => "../" + item),
+  // entryPoints: '../',
   out: path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'docs'),
   githubPages: true,
   hideGenerator: true,
+  cleanOutputDir: true,
+  // searchCategoryBoosts: {
+  //   "Common Items": 1.5
+  // },
+  // searchInComments: true,
+  // pretty: false,
+  // basePath: '../packages/core/',
   // name: "Runtime data validation for TypeScript",
   navigationLinks: {
     Example: "http://example.com",
