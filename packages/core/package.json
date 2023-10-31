@@ -8,14 +8,24 @@
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js"
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js"
     }
   },
   "scripts": {
     "build": "rollup -c"
   },
   "keywords": ["javascript", "util"],
-  "author": "",
-  "license": "ISC"
+  "author": "jb <ibin@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Tuan/-lazy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/T-Tuan/-lazy.git/issues"
+  },
+  "engines": {
+    "node": ">=14"
+  }
 }
