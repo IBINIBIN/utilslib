@@ -109,9 +109,9 @@ jobs:
         with:
           path: docs
 
-      - name: Deploy doc to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+      - name: Authenticate with NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
 
       - name: Deploy core to npm
         id: core_publish
@@ -126,3 +126,8 @@ jobs:
         run: pnpm --filter ${{ env.npm_org }}/dom  publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        
+
+      - name: Deploy doc to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
