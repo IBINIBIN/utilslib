@@ -14,8 +14,7 @@ permissions:
   id-token: write
 
 env:
-  npm_org: \@utils-libjs\/
-  # npm_org: \@unocss\/
+  npm_org: \@utils-libjs
 
 jobs:
   checkPackageVersion:
@@ -47,11 +46,9 @@ jobs:
 
       - name: Get npm latest version
         id: get-npm-version
-        # core_latest_version=$(npm view ${{ env.npm_org }}core version)
-        # dom_latest_version=$(npm view ${{ env.npm_org }}dom version)
         run: |
-          core_latest_version=0.0.4
-          dom_latest_version=0.0.5
+          core_latest_version=$(npm view ${{ env.npm_org }}/core version)
+          dom_latest_version=$(npm view ${{ env.npm_org }}/dom version)
           echo "core_latest_version=$core_latest_version" >> $GITHUB_OUTPUT
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
 
@@ -66,14 +63,14 @@ jobs:
 
 
           if [ "$core_current_version" != "$core_latest_version" ]; then
-            echo "${{ env.npm_org }}core Version has changed. Triggering the build."
+            echo "${{ env.npm_org }}/core Version has changed. Triggering the build."
             echo "corePublish=1" >> $GITHUB_OUTPUT
           else
             echo "core version has not changed. Skipping the build."
           fi
 
           if [ "$dom_current_version" != "$dom_latest_version" ]; then
-            echo "${{ env.npm_org }}dom Version has changed. Triggering the build."
+            echo "${{ env.npm_org }}/dom Version has changed. Triggering the build."
             echo "domPublish=1" >> $GITHUB_OUTPUT
           else
             echo "dom version has not changed. Skipping the build."
@@ -115,13 +112,13 @@ jobs:
       - name: Deploy core to npm
         id: core_publish
         if: needs.checkPackageVersion.outputs.corePublish == 1
-        run: pnpm --filter ${{ env.npm_org }}core  publish --no-git-checks --access public
+        run: pnpm --filter ${{ env.npm_org }}/core  publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Deploy dom to npm
         id: dom_publish
         if: needs.checkPackageVersion.outputs.domPublish == 1
-        run: pnpm --filter ${{ env.npm_org }}dom  publish --no-git-checks --access public
+        run: pnpm --filter ${{ env.npm_org }}/dom  publish --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
