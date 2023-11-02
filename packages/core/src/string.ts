@@ -1,3 +1,4 @@
+import { isEmptyString, isString } from "./is";
 /**
  * 生成指定长度的随机字符串。
  *
@@ -150,3 +151,18 @@ export const formatNumber = (
 
   return String(num);
 };
+
+/**
+ * 将单词的首字母转为大写并返回，如果无法转为大写则返回原单词。
+ *
+ * @param word - 要处理的单词。
+ * @returns 首字母大写后的单词，如果无法转为大写或参数未提供则返回原单词。
+ */
+export function capitalize<T>(word: T): T {
+  if (isString(word) && !isEmptyString(word)) {
+    const firstChar = word.charAt(0).toUpperCase();
+    return firstChar + word.slice(1) as T;
+  }
+
+  return word;
+}

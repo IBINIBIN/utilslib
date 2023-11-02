@@ -16,7 +16,7 @@ function getType(value: unknown): string {
  * @param value - 要检查的值。
  * @returns 如果值不为 Undefined 类型，则返回 true，否则返回 false。
  */
-export function isDef<T extends any>(value?: T): value is T {
+export function isDef<T extends unknown>(value: T | undefined): value is T {
   return typeof value !== "undefined";
 }
 
@@ -238,7 +238,7 @@ export function isEmpty(value: unknown): value is undefined | null | [] | "" {
  * @param value - 要检查的值。
  * @returns 如果值为为空对象，则返回 true，否则返回 false。
  */
-export function isEmptyObject(value: unknown): value is Record<string, any> {
+export function isEmptyObject(value: unknown): value is object {
   return isObject(value) && !isNull(value) && Object.keys(value).length === 0;
 }
 
@@ -272,7 +272,7 @@ export function isTargetInOptions<T>(
 }
 
 /**
- * 检测给定的值是否在指定范围内。
+ * 检测给定的值(数字)是否在指定范围内。
  *
  * @param value - 要检测的值。
  * @param range - 范围，包含最小值和最大值。
