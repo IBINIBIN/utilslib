@@ -1,5 +1,5 @@
 {
-  "name": "@lazyhome/core",
+  "name": "@utils-libjs/core",
   "version": "0.0.1",
   "type": "module",
   "description": "",
@@ -24,8 +24,5 @@
   },
   "bugs": {
     "url": "https://github.com/T-Tuan/-lazy.git/issues"
-  },
-  "engines": {
-    "node": ">=14"
   }
 }

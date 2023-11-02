@@ -18,22 +18,6 @@ export function getArrayIntersection<T, K extends keyof T = keyof T>(
   return arr1.filter((item) => arr2.includes(item));
 }
 
-// /**
-//  * 检查指定目标是否在选项中（选项可以是单个对象或对象数组）。
-//  *
-//  * @param target - 目标项。
-//  * @param options - 选项，可以是单个对象或对象数组。
-//  * @returns 若目标项在选项中，则返回 true；否则返回 false。
-//  */
-// export function isTargetInOptions<T>(target: T, ...options: (T | T[])[]): boolean {
-//   return options.some((option) => {
-//     if (Array.isArray(option)) {
-//       return option.some((item) => item === target);
-//     }
-//     return option === target;
-//   });
-// }
-
 /**
  * 确保给定数字在指定范围内。
  *
