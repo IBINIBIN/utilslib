@@ -20,7 +20,7 @@ jobs:
     - name: Get previous commit's package.json version
       id: get-previous-version
       run: |
-        previous_commit=$(git log -n 2 --pretty=format:%H -- package.json)
+        previous_commit=$(git log -n 1 --skip=1 --pretty=format:%H -- package.json)
         previous_version=$(git show $previous_commit:package.json | jq -r .version)
         echo "previous_version=$previous_version" >> $GITHUB_OUTPUT
         echo "previous_version=$previous_version"
