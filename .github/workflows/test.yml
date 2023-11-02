@@ -17,9 +17,12 @@ jobs:
     # - name: Install jq
     #   run: sudo apt-get update && sudo apt-get install -y jq
 
+
     - name: Get previous commit's package.json version
       id: get-previous-version
       run: |
+        commit_hashes=$(git log -n 5 --pretty=format:%H)
+        echo "Recent commit hashes: $commit_hashes"
         previous_commit=$(git log -n 1 --skip=2 --pretty=format:%H -- package.json)
         echo "git log"
         echo "previous_commit=$previous_commit"
