@@ -73,7 +73,7 @@ const createConfig = (enter) => {
     return word.charAt(0).toUpperCase() + word.slice(1);
   }
 
-  const packageBundleName = `_${packageName}${letterUp(subPackageName)}`;
+  const packageBundleName = `_${packageName.replace('-','')}${letterUp(subPackageName)}`;
 
   const basePlugins = [resolve()];
 
