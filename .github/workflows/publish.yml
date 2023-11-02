@@ -40,6 +40,7 @@ jobs:
           core_current_version=$(cat packages/core/package.json | jq -r .version)
           echo "core_current_version=$core_current_version" >> $GITHUB_OUTPUT
           echo "core_current_version=$core_current_version"
+
           dom_current_version=$(cat packages/dom/package.json | jq -r .version)
           echo "dom_current_version=$dom_current_version" >> $GITHUB_OUTPUT
           echo "dom_current_version=$dom_current_version"
@@ -48,9 +49,12 @@ jobs:
         id: get-npm-version
         run: |
           core_latest_version=$(npm view ${{ env.npm_org }}/core version)
-          dom_latest_version=$(npm view ${{ env.npm_org }}/dom version)
           echo "core_latest_version=$core_latest_version" >> $GITHUB_OUTPUT
+          echo "core_latest_version=$core_latest_version"
+
+          dom_latest_version=$(npm view ${{ env.npm_org }}/dom version)
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
+          echo "dom_latest_version=$dom_latest_version"
 
       - name: Compare versions
         id: compare-version

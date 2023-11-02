@@ -1,6 +1,6 @@
 {
   "name": "@utils-libjs/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "",
   "main": "dist/index.cjs.js",
@@ -15,7 +15,10 @@
   "scripts": {
     "build": "rollup -c"
   },
-  "keywords": ["javascript", "util"],
+  "keywords": [
+    "javascript",
+    "util"
+  ],
   "author": "jb <ibin@qq.com>",
   "license": "MIT",
   "repository": {
