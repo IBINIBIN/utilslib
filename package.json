@@ -1,6 +1,6 @@
 {
   "name": "@utils-libjs/monorepo",
-  "version": "0.1.8",
+  "version": "0.2.8",
   "private": "true",
   "type": "module",
   "description": "",
