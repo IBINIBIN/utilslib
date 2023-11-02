@@ -14,7 +14,9 @@ permissions:
   id-token: write
 
 env:
-  npm_org: \@utils-libjs\/
+  # npm_org: \@utils-libjs\/
+  npm_org: \@unocss\/
+  
 
 jobs:
   checkPackageVersion:
@@ -104,6 +106,24 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: docs
+
+      - name: Deploy doc to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+      - name: Deploy core to npm
+        id: core_publish
+        if: needs.checkPackageVersion.outputs.corePublish == 1
+        run: pnpm --filter ${{ env.npm_org }}core  publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Deploy dom to npm
+        id: dom_publish
+        if: needs.checkPackageVersion.outputs.domPublish == 1
+        run: pnpm --filter ${{ env.npm_org }}dom  publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   # deploy:
   #   environment:
