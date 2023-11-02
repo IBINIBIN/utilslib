@@ -14,9 +14,8 @@ permissions:
   id-token: write
 
 env:
-  # npm_org: \@utils-libjs\/
-  npm_org: \@unocss\/
-  
+  npm_org: \@utils-libjs\/
+  # npm_org: \@unocss\/
 
 jobs:
   checkPackageVersion:
@@ -48,9 +47,11 @@ jobs:
 
       - name: Get npm latest version
         id: get-npm-version
+        # core_latest_version=$(npm view ${{ env.npm_org }}core version)
+        # dom_latest_version=$(npm view ${{ env.npm_org }}dom version)
         run: |
-          core_latest_version=$(npm view ${{ env.npm_org }}core version || false)
-          dom_latest_version=$(npm view ${{ env.npm_org }}dom version || false)
+          core_latest_version=0.0.4
+          dom_latest_version=0.0.5
           echo "core_latest_version=$core_latest_version" >> $GITHUB_OUTPUT
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
 
