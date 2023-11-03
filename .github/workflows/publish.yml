@@ -53,7 +53,6 @@ jobs:
             core_latest_version="-1"
           fi
 
-          core_latest_version=$(npm view ${{ env.npm_org }}/core version)
           echo "core_latest_version=$core_latest_version" >> $GITHUB_OUTPUT
           echo "core_latest_version=$core_latest_version"
 
@@ -63,7 +62,6 @@ jobs:
             echo "Failed to get dom package version, setting to -1"
             dom_latest_version="-1"
           fi
-          dom_latest_version=$(npm view ${{ env.npm_org }}/dom version)
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
           echo "dom_latest_version=$dom_latest_version"
 
