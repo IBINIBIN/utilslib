@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
 
 permissions:
   contents: read
@@ -14,7 +12,7 @@ permissions:
   id-token: write
 
 env:
-  npm_org: \@utils-libjs
+  npm_org: \@utilslib
 
 jobs:
   checkPackageVersion:
@@ -48,10 +46,23 @@ jobs:
       - name: Get npm latest version
         id: get-npm-version
         run: |
+          if core_latest_version=$(npm view ${{ env.npm_org }}/core version 2>/dev/null); then
+            echo "get core Package version: $core_latest_version"
+          else
+            echo "Failed to get core package version, setting to -1"
+            core_latest_version="-1"
+          fi
+
           core_latest_version=$(npm view ${{ env.npm_org }}/core version)
           echo "core_latest_version=$core_latest_version" >> $GITHUB_OUTPUT
           echo "core_latest_version=$core_latest_version"
 
+          if dom_latest_version=$(npm view ${{ env.npm_org }}/dom version 2>/dev/null); then
+            echo "get core Package version: $dom_latest_version"
+          else
+            echo "Failed to get dom package version, setting to -1"
+            dom_latest_version="-1"
+          fi
           dom_latest_version=$(npm view ${{ env.npm_org }}/dom version)
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
           echo "dom_latest_version=$dom_latest_version"
@@ -124,9 +135,6 @@ jobs:
         id: dom_publish
         if: needs.checkPackageVersion.outputs.domPublish == 1
         run: pnpm --filter ${{ env.npm_org }}/dom  publish --no-git-checks --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        
 
       - name: Deploy doc to GitHub Pages
         id: deployment
