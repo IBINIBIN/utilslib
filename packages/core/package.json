@@ -1,12 +1,13 @@
 {
   "name": "@utilslib/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "require": "./dist/index.cjs.js",
       "import": "./dist/index.esm.js"
     }
@@ -22,9 +23,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/T-Tuan/-lazy.git"
+    "url": "git+https://github.com/T-Tuan/utilslib.git"
   },
   "bugs": {
-    "url": "https://github.com/T-Tuan/-lazy.git/issues"
+    "url": "https://github.com/T-Tuan/utilslib.git/issues"
   }
 }
