@@ -1,6 +1,6 @@
 {
-  "name": "@utils-libjs/monorepo",
-  "version": "0.2.8",
+  "name": "@utilslib/monorepo",
+  "version": "0.0.1",
   "private": "true",
   "type": "module",
   "description": "",
@@ -13,7 +13,13 @@
     "build:doc": "typedoc --options config/typedoc.config.js",
     "build": "cross-env NODE_ENV=production rollup -c",
     "deploy": "pnpm -r publish --no-git-checks --access public",
-    "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public"
+    "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
+    "core:patch": "npm -C packages/core version patch",
+    "core:minor": "npm -C packages/core version minor",
+    "core:major": "npm -C packages/core version major",
+    "dom:patch": "npm -C packages/dom version patch",
+    "dom:minor": "npm -C packages/dom version minor",
+    "dom:major": "npm -C packages/dom version major"
   },
   "dependencies": {
     "@babel/core": "^7.23.2",
