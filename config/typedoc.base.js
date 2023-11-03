@@ -7,11 +7,7 @@ import { globSync } from "glob";
 export default {
   out: path.join(fileURLToPath(new URL('.', import.meta.url)), '..', 'docs'),
   githubPages: true,
-  hideGenerator: true,
-  cleanOutputDir: true,
-  // navigationLinks: {
-  //   Example: "http://example.com",
-  // },
+  // cleanOutputDir: true,
   includeVersion: true,
   searchInComments: true,
   navigation: {
