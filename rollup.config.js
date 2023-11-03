@@ -53,6 +53,7 @@ const createOutputList = (name, enter) => {
           path.basename(path.resolve(enter, "../..")),
           `index.${format}.js`
         ),
+        freeze: true,
       };
     }
   );
@@ -73,7 +74,7 @@ const createConfig = (enter) => {
     return word.charAt(0).toUpperCase() + word.slice(1);
   }
 
-  const packageBundleName = `_${packageName.replace('-','')}${letterUp(subPackageName)}`;
+  const packageBundleName = `_${packageName}${letterUp(subPackageName)}`;
 
   const basePlugins = [resolve()];
 
@@ -99,6 +100,7 @@ const createConfig = (enter) => {
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[1],
+      treeshake: false,
       plugins: [
         ...basePlugins,
         typescript({
