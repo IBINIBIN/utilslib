@@ -8,5 +8,9 @@ export default {
   // extends: ["./typedoc.base.js"],
   entryPoints: globSync("packages/*").map((item) => "../" + item),
   entryPointStrategy: 'packages',
+  hideGenerator: true,
   includeVersion: false,
+  navigationLinks: {
+    GitHub: "https://github.com/T-Tuan/utilslib",
+  },
 };
