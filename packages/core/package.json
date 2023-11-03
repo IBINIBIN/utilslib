@@ -1,7 +1,6 @@
 {
-  "name": "@utils-libjs/core",
-  "version": "0.0.2",
-  "type": "module",
+  "name": "@utilslib/core",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -19,7 +18,7 @@
     "javascript",
     "util"
   ],
-  "author": "jb <ibin@qq.com>",
+  "author": "ibin <ibin@qq.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
