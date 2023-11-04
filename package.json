@@ -12,7 +12,6 @@
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
     "build:doc": "typedoc --options config/typedoc.config.js",
     "build": "cross-env NODE_ENV=production rollup -c",
-    "deploy": "pnpm -r publish --no-git-checks --access public",
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
     "core:patch": "npm -C packages/core version patch",
     "core:minor": "npm -C packages/core version minor",

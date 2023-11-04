@@ -4,6 +4,7 @@ import path from "node:path";
 import clear from "rollup-plugin-clear";
 import esbuild from "rollup-plugin-esbuild";
 import resolve from "@rollup/plugin-node-resolve";
+import dts from "rollup-plugin-dts";
 
 import typescript from "@rollup/plugin-typescript";
 import { globSync } from "glob";
@@ -79,6 +80,7 @@ const createConfig = (enter) => {
   const basePlugins = [resolve()];
 
   return [
+    // 构建生产包
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[0],
@@ -87,7 +89,6 @@ const createConfig = (enter) => {
         typescript({
           target: "ES6",
           include: [`packages/${subPackageName}/src/*`],
-          declarationDir: path.resolve(getPackageDistPath(enter), "types"),
         }),
         esbuild({
           minify: process.env.NODE_ENV === "production",
@@ -97,6 +98,7 @@ const createConfig = (enter) => {
         }),
       ],
     },
+    // 构建 js 代码。 提供不方便下载此包的用户直接复制
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[1],
@@ -106,12 +108,31 @@ const createConfig = (enter) => {
         typescript({
           target: "ESNext",
           include: [`packages/${subPackageName}/src/*`],
-          outDir: r("lib", subPackageName, "types"),
         }),
         clear({
           targets: [r("lib", subPackageName)],
         }),
       ],
+    },
+    // 构建d.ts
+    {
+      input: enter,
+      output: [
+        {
+          file: path.resolve(getPackageDistPath(enter), `types/index.d.ts`),
+          format: "es",
+        },
+        {
+          file: r(
+            "lib",
+            subPackageName,
+            `types/index.d.ts`
+          ),
+          format: "es",
+        },
+      ],
+      treeshake: false,
+      plugins: [dts()],
     },
   ];
 };
