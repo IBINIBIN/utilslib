@@ -14,11 +14,11 @@
     "build": "cross-env NODE_ENV=production rollup -c",
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
     "core:patch": "npm -C packages/core version patch",
-    "core:minor": "npm -C packages/core version minor",
-    "core:major": "npm -C packages/core version major",
     "dom:patch": "npm -C packages/dom version patch",
+    "core:minor": "npm -C packages/core version minor",
     "dom:minor": "npm -C packages/dom version minor",
-    "dom:major": "npm -C packages/dom version major"
+    "dom:major": "npm -C packages/dom version major",
+    "core:major": "npm -C packages/core version major"
   },
   "dependencies": {
     "@babel/core": "^7.23.2",
