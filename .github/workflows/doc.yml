@@ -1,0 +1,33 @@
+name: Deploy Doc
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js >=v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: ">=16"
+          cache: "pnpm"
+      - run: |
+          pnpm i
+          pnpm build:doc
+      - name: upload production artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs
+      - name: Deploy doc to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
