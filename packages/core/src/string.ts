@@ -1,4 +1,4 @@
-import { isEmptyString, isString } from "./is";
+import { isEmptyString, isHasString, isString } from "./is";
 /**
  * 生成指定长度的随机字符串。
  *
@@ -19,18 +19,30 @@ export function generateRandomString(length: number = 8): string {
 }
 
 /**
+ * 从文件路径中提取文件名。
+ *
+ * @param path - 包含文件名的路径。
+ * @returns 提取出的文件名。
+ */
+export function getBasename(path: string): string {
+  const match = path.match(/\/([^\/]+)$/);
+  return match ? match[1] : path;
+}
+
+/**
  * 获取文件名（不包含扩展名）。
  *
  * @param fileName - 文件名。
  * @returns 提取的文件名。
  */
-export const getFileName = (fileName: string): string => {
-  const lastDotIndex = fileName.lastIndexOf(".");
+export function getFileName<T>(fileName: string): string | '' {
+  const name = getBasename(fileName)
+  const lastDotIndex = name.lastIndexOf(".");
   if (lastDotIndex === -1) {
-    return fileName;
+    return name;
   }
-  return fileName.slice(0, lastDotIndex);
-};
+  return name.slice(0, lastDotIndex);
+}
 
 /**
  * 获取文件名的后缀。
@@ -114,9 +126,11 @@ export function numberToChinese(value: string | number): string {
  * @param camelCase - 要转换的小驼峰命名字符串。
  * @returns 转换后的蛇形变量名称。
  */
-export const camelToSnake = (camelCase: string): string => {
-  return camelCase.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
-};
+export function camelToSnake(camelCase: string): string {
+  return camelCase.replace(/[A-Z]/g, function (match) {
+    return `_${match.toLowerCase()}`;
+  });
+}
 
 /**
  * 将蛇形变量名称转换为小驼峰命名。
@@ -124,9 +138,11 @@ export const camelToSnake = (camelCase: string): string => {
  * @param snakeCase - 要转换的蛇形变量名称。
  * @returns 转换后的小驼峰命名。
  */
-export const snakeToCamel = (snakeCase: string): string => {
-  return snakeCase.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
-};
+export function snakeToCamel(snakeCase: string): string {
+  return snakeCase.replace(/_([a-z])/g, function (_, char) {
+    return char.toUpperCase();
+  });
+}
 
 /**
  * 格式化数字，如果超过指定值则显示为指定值+。
@@ -135,10 +151,7 @@ export const snakeToCamel = (snakeCase: string): string => {
  * @param threshold - 阈值，超过该值则显示为该值+。默认值为 99。
  * @returns 格式化后的字符串。
  */
-export const formatNumber = (
-  value: string | number,
-  threshold = 99
-): string => {
+export function formatNumber(value: string | number, threshold = 99): string {
   const num = Number(value);
 
   if (isNaN(num)) {
@@ -150,7 +163,7 @@ export const formatNumber = (
   }
 
   return String(num);
-};
+}
 
 /**
  * 将单词的首字母转为大写并返回，如果无法转为大写则返回原单词。
@@ -161,7 +174,7 @@ export const formatNumber = (
 export function capitalize<T>(word: T): T {
   if (isString(word) && !isEmptyString(word)) {
     const firstChar = word.charAt(0).toUpperCase();
-    return firstChar + word.slice(1) as T;
+    return (firstChar + word.slice(1)) as T;
   }
 
   return word;
