@@ -33,6 +33,5 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
     }
   });
 
-  
   return pickedObject as Pick<T, K>;
 }

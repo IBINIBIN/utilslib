@@ -1,4 +1,5 @@
 {
   "extends": ["../../config/typedoc.base.js"],
+  "readme": "README_DOC.md",
   "entryPoints": ["src/index.ts"]
 }

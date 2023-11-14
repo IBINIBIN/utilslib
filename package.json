@@ -10,7 +10,8 @@
   },
   "scripts": {
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
-    "build:doc": "typedoc --options config/typedoc.config.js",
+    "build:doc": "node build/docBuild.js",
+    "build:doc-config": "typedoc --options config/typedoc.config.js",
     "build": "cross-env NODE_ENV=production rollup -c",
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
     "core:patch": "npm -C packages/core version patch",
@@ -29,10 +30,10 @@
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-esbuild": "^6.1.0",
     "typedoc": "^0.25.2",
-    "typedoc-plugin-markdown": "^3.16.0",
-    "typedoc-plugin-mdn-links": "^3.1.0"
+    "typedoc-plugin-markdown": "^3.16.0"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^5.0.1",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",

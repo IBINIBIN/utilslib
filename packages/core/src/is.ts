@@ -10,7 +10,7 @@ function getType(value: unknown): string {
 }
 
 /**
- * 检查一个值是否已定义
+ * 检查一个值是否为非undefined。
  * 注: 非「undefined」类型
  *
  * @param value - 要检查的值。
@@ -108,6 +108,16 @@ export function isArray(value: unknown): value is any[] {
  */
 export function isFunction(value: unknown): value is Function {
   return getType(value) === "Function";
+}
+
+/**
+ * 检查一个值是否为 Blob 类型。
+ *
+ * @param value - 要检查的值。
+ * @returns 如果值为 Blob 类型，则返回 true，否则返回 false。
+ */
+export function isBlob(value: unknown): value is Blob {
+  return getType(value) === "Blob";
 }
 
 /**
@@ -210,10 +220,20 @@ export function isNonNullable<T extends unknown>(
  * 检查一个值是否为空字符串。
  *
  * @param value - 要检查的值。
- * @returns 如果值为为空字符串，则返回 true，否则返回 false。
+ * @returns 如果值为空字符串，则返回 true，否则返回 false。
  */
 export function isEmptyString(value: unknown): value is "" {
-  return typeof value === "string" && value.length === 0;
+  return isString(value) && value.length === 0;
+}
+
+/**
+ * 检查一个值是否为非空字符串。
+ *
+ * @param value - 要检查的值。
+ * @returns 如果值为非空字符串，则返回 true，否则返回 false。
+ */
+export function isHasString(value: unknown): value is string {
+  return isString(value) && value.length > 0;
 }
 
 /**
@@ -236,10 +256,20 @@ export function isEmpty(value: unknown): value is undefined | null | [] | "" {
  * 检查一个值是否为空对象。
  *
  * @param value - 要检查的值。
- * @returns 如果值为为空对象，则返回 true，否则返回 false。
+ * @returns 如果值为空对象，则返回 true，否则返回 false。
  */
 export function isEmptyObject(value: unknown): value is object {
   return isObject(value) && !isNull(value) && Object.keys(value).length === 0;
+}
+
+/**
+ * 检查一个值是否为非空对象。
+ *
+ * @param value - 要检查的值。
+ * @returns 如果值有最少一个可枚举属性，则返回 true，否则返回 false。
+ */
+export function isHasObject(value: unknown): value is object {
+  return isObject(value) && Object.keys(value).length > 0;
 }
 
 /**
@@ -250,6 +280,16 @@ export function isEmptyObject(value: unknown): value is object {
  */
 export function isEmptyArray(value: unknown): value is any[] {
   return Array.isArray(value) && value.length === 0;
+}
+
+/**
+ * 检查一个值是否为非空数组。
+ *
+ * @param value - 要检查的值。
+ * @returns 如果值为非空数组，则返回 true，否则返回 false。
+ */
+export function isHasArray(value: unknown): value is any[] {
+  return Array.isArray(value) && value.length > 0;
 }
 
 /**
