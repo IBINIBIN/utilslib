@@ -4,6 +4,7 @@ import path from "node:path";
 import clear from "rollup-plugin-clear";
 import esbuild from "rollup-plugin-esbuild";
 import resolve from "@rollup/plugin-node-resolve";
+import alias from "@rollup/plugin-alias";
 import dts from "rollup-plugin-dts";
 
 import typescript from "@rollup/plugin-typescript";
@@ -19,6 +20,7 @@ console.log(`globalEnterFile: `, globalEnterFile);
 
 /** 获取子包的dist文件夹路径 */
 const getPackageDistPath = (url) => path.resolve(url, "../..", "dist");
+const getPackageLibPath = (url) => path.resolve(url, "../..", "lib");
 
 const createOutputList = (name, enter) => {
   const outputConfigs = {
@@ -41,6 +43,7 @@ const createOutputList = (name, enter) => {
       return {
         ...config,
         file: path.resolve(getPackageDistPath(enter), `index.${format}.js`),
+        freeze: true,
       };
     }
   );
@@ -49,11 +52,7 @@ const createOutputList = (name, enter) => {
     ([format, config]) => {
       return {
         ...config,
-        file: r(
-          "lib",
-          path.basename(path.resolve(enter, "../..")),
-          `index.${format}.js`
-        ),
+        file: path.resolve(getPackageLibPath(enter), `index.${format}.js`),
         freeze: true,
       };
     }
@@ -77,7 +76,14 @@ const createConfig = (enter) => {
 
   const packageBundleName = `_${packageName}${letterUp(subPackageName)}`;
 
-  const basePlugins = [resolve()];
+  const basePlugins = [
+    resolve(),
+    alias({
+      entries: {
+        "@utilslib/core": "packages/core/src/index.ts",
+      },
+    }),
+  ];
 
   return [
     // 构建生产包
@@ -88,7 +94,6 @@ const createConfig = (enter) => {
         ...basePlugins,
         typescript({
           target: "ES6",
-          include: [`packages/${subPackageName}/src/*`],
         }),
         esbuild({
           minify: process.env.NODE_ENV === "production",
@@ -102,15 +107,13 @@ const createConfig = (enter) => {
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[1],
-      treeshake: false,
       plugins: [
         ...basePlugins,
         typescript({
           target: "ESNext",
-          include: [`packages/${subPackageName}/src/*`],
         }),
         clear({
-          targets: [r("lib", subPackageName)],
+          targets: [getPackageLibPath(enter)],
         }),
       ],
     },
@@ -123,11 +126,7 @@ const createConfig = (enter) => {
           format: "es",
         },
         {
-          file: r(
-            "lib",
-            subPackageName,
-            `types/index.d.ts`
-          ),
+          file: path.resolve(getPackageLibPath(enter), `types/index.d.ts`),
           format: "es",
         },
       ],

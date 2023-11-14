@@ -35,10 +35,10 @@ importers:
       typedoc-plugin-markdown:
         specifier: ^3.16.0
         version: 3.16.0(typedoc@0.25.2)
-      typedoc-plugin-mdn-links:
-        specifier: ^3.1.0
-        version: 3.1.0(typedoc@0.25.2)
     devDependencies:
+      '@rollup/plugin-alias':
+        specifier: ^5.0.1
+        version: 5.0.1(rollup@4.1.4)
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.23.2)(rollup@4.1.4)
@@ -60,7 +60,11 @@ importers:
 
   packages/core: {}
 
-  packages/dom: {}
+  packages/dom:
+    dependencies:
+      '@utilslib/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 
@@ -1453,6 +1457,19 @@ packages:
     dev: false
     optional: true
 
+  /@rollup/plugin-alias@5.0.1(rollup@4.1.4):
+    resolution: {integrity: sha512-JObvbWdOHoMy9W7SU0lvGhDtWq9PllP5mjpAy+TUslZG/WzOId9u80Hsqq1vCUn9pFJ0cxpdcnAv+QzU2zFH3Q==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      rollup: 4.1.4
+      slash: 4.0.0
+    dev: true
+
   /@rollup/plugin-babel@6.0.4(@babel/core@7.23.2)(rollup@4.1.4):
     resolution: {integrity: sha512-YF7Y52kFdFT/xVSuVdjkV5ZdX/3YtmX0QulG+x0taQOtJdHYzVU61aSSkAgVJ7NOv6qPkIYiJSgSWWN/DM5sGw==}
     engines: {node: '>=14.0.0'}
@@ -2292,6 +2309,11 @@ packages:
     engines: {node: '>=14'}
     dev: false
 
+  /slash@4.0.0:
+    resolution: {integrity: sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==}
+    engines: {node: '>=12'}
+    dev: true
+
   /smob@1.4.1:
     resolution: {integrity: sha512-9LK+E7Hv5R9u4g4C3p+jjLstaLe11MDsL21UpYaCNmapvMkYhqCV4A/f/3gyH8QjMyh6l68q9xC85vihY9ahMQ==}
     dev: true
@@ -2374,14 +2396,6 @@ packages:
       typedoc: '>=0.24.0'
     dependencies:
       handlebars: 4.7.8
-      typedoc: 0.25.2(typescript@5.2.2)
-    dev: false
-
-  /typedoc-plugin-mdn-links@3.1.0(typedoc@0.25.2):
-    resolution: {integrity: sha512-4uwnkvywPFV3UVx7WXpIWTHJdXH1rlE2e4a1WsSwCFYKqJxgTmyapv3ZxJtbSl1dvnb6jmuMNSqKEPz77Gs2OA==}
-    peerDependencies:
-      typedoc: '>= 0.23.14 || 0.24.x || 0.25.x'
-    dependencies:
       typedoc: 0.25.2(typescript@5.2.2)
     dev: false
 
