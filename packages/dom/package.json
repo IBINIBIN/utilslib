@@ -23,6 +23,9 @@
   ],
   "author": "ibin <ibin@qq.com>",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/T-Tuan/utilslib.git"
