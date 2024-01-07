@@ -59,11 +59,33 @@ export function getImageSize(
  * @param callback - 鼠标点击事件不包含目标元素时触发的回调函数。
  * @returns 一个函数，用于销毁监听事件。
  */
-export function listenClickOutside(
-  target: Element | Element[],
+export function listenClickOutside<T extends string | Element>(
+  target: T | T[],
   callback: () => void
 ): () => void {
-  const targets = Array.isArray(target) ? target : [target];
+  let targets: Element[] = [];
+
+  if (typeof target === "string") {
+    targets = [...document.querySelectorAll(target)].filter(Boolean);
+  } else if (target instanceof Element) {
+    targets = [target];
+  } else if (Array.isArray(target)) {
+    targets = target
+      .map((item) => {
+        if (isString(item)) {
+          return [...document.querySelectorAll(item)].filter(
+            (item): item is Element => item instanceof Element
+          );
+        } else if (item instanceof Element) {
+          return [item];
+        } else {
+          return [];
+        }
+      })
+      .flat();
+  }
+
+  targets = targets.filter(el => el instanceof Element);
 
   const handleClickOutside = (event: MouseEvent) => {
     const isClickOutside = targets.every(
@@ -87,7 +109,7 @@ export function listenClickOutside(
  * @param fileName - 要保存的文件名。
  * @param blob - 要下载的 Blob 对象。
  */
-export function downloadFileByBlob(fileName: string, blob: Blob): void {
+export function downloadFile(type: 'blob' | 'src',fileName: string, blob: Blob): void {
   const downloadLink = document.createElement("a");
 
   downloadLink.href = URL.createObjectURL(blob);
@@ -105,7 +127,7 @@ export function downloadFileByBlob(fileName: string, blob: Blob): void {
  */
 export function loadJS(
   files: string | string[],
-  config?: HTMLScriptElement
+  config?: Pick<Partial<HTMLScriptElement>, 'type'|'async'> 
 ): Promise<void[]> {
   // 获取head标签
   const head = document.getElementsByTagName("head")[0];
@@ -125,7 +147,7 @@ export function loadJS(
         // 添加自定义属性
         if (isHasObject(config)) {
           Object.entries(config).forEach(([key, val]) => {
-            scriptElement.setAttribute(key, val);
+            scriptElement.setAttribute(key, String(val));
           });
         }
 

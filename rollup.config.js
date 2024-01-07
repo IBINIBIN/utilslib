@@ -16,7 +16,6 @@ const r = (...url) => path.resolve(dirName, ...url);
 
 /** 所有子包的入口文件 */
 const globalEnterFile = globSync("packages/*/src/index.ts");
-console.log(`globalEnterFile: `, globalEnterFile);
 
 /** 获取子包的dist文件夹路径 */
 const getPackageDistPath = (url) => path.resolve(url, "../..", "dist");

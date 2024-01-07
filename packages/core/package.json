@@ -25,5 +25,8 @@
   },
   "bugs": {
     "url": "https://github.com/T-Tuan/utilslib.git/issues"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }
