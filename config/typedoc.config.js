@@ -1,6 +1,3 @@
-// import { glob, globSync, globStream, globStreamSync, Glob } from 'glob'
-import path from "node:path";
-import {fileURLToPath} from 'node:url'
 import { globSync } from "glob";
 
 /** @type {import('typedoc').TypeDocOptions} */

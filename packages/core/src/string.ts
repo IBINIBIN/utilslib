@@ -4,6 +4,10 @@ import { isEmptyString, isHasString, isString } from "./is";
  *
  * @param length - 随机字符串的长度。默认值为 8。
  * @returns 生成的随机字符串。
+ * @example
+ * ```ts
+ * generateRandomString(8) // => "aBcDeFgH"
+ * 
  */
 export function generateRandomString(length: number = 8): string {
   const characters =
@@ -50,9 +54,9 @@ export function getFileName<T>(fileName: string): string | '' {
  * @param filename - 文件名。
  * @returns 文件名的后缀。
  */
-export const getFileExtension = (filename: string): string => {
-  return filename.slice(filename.lastIndexOf(".") + 1);
-};
+// export const getFileExtension = (filename: string): string => {
+//   return filename.slice(filename.lastIndexOf(".") + 1);
+// };
 
 /**
  * 格式化价格，添加千位分隔符并保留指定的小数位数。
@@ -125,6 +129,19 @@ export function numberToChinese(value: string | number): string {
  *
  * @param camelCase - 要转换的小驼峰命名字符串。
  * @returns 转换后的蛇形变量名称。
+ * 
+ * @example
+ * 随便写点文案
+ * ```
+ * console
+ * ```
+ * 
+ * @example
+ * ```js
+ * camelToSnake('fooBar') // => 'foo_bar'
+ * camelToSnake('fooBarBaz') // => 'foo_bar_baz'
+ * camelToSnake('foo') // => 'foo'
+ * ```
  */
 export function camelToSnake(camelCase: string): string {
   return camelCase.replace(/[A-Z]/g, function (match) {
