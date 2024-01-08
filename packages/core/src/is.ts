@@ -70,6 +70,10 @@ export function isString(value: unknown): value is string {
   return getType(value) === "String";
 }
 
+export function isBigInt(value: unknown): value is BigInt {
+  return typeof value === "bigint";
+}
+
 /**
  * 检查一个值是否为 Symbol 类型。
  *

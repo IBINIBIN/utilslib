@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@utilslib/core": "latest",
+    "@utilslib/dom": "latest"
+  }
+}
