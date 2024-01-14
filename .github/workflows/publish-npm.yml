@@ -1,15 +1,7 @@
-name: publish package
+name: publish npm
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 env:
   npm_org: \@utilslib
@@ -95,19 +87,35 @@ jobs:
           # 在这里执行构建和测试操作
           echo "Building and testing..."
 
-  trigger-another-workflow:
+  build:
     runs-on: ubuntu-latest
     needs: checkPackageVersion
     if: needs.checkPackageVersion.outputs.corePublish == 1 || needs.checkPackageVersion.outputs.domPublish == 1
     steps:
-      - name: Trigger publish-npm workflow
-        run: |
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish-npm.yml/dispatches" -d '{"ref":"main"}'
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js >=v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: ">=16"
+          cache: "pnpm"
+      - run: |
+          pnpm i
+          pnpm build
 
-      - name: Trigger doc workflow
-        run: |
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/doc.yml/dispatches" -d '{"ref":"main"}'
+      - name: Authenticate with NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
-      - name: Trigger doc vscode-extension workflow
-        run: |
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish-vscode-extension-fe-integration.yml/dispatches" -d '{"ref":"main"}'
+      - name: Deploy core to npm
+        id: core_publish
+        if: needs.checkPackageVersion.outputs.corePublish == 1
+        run: pnpm --filter ${{ env.npm_org }}/core  publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Deploy dom to npm
+        id: dom_publish
+        if: needs.checkPackageVersion.outputs.domPublish == 1
+        run: pnpm --filter ${{ env.npm_org }}/dom  publish --no-git-checks --access public

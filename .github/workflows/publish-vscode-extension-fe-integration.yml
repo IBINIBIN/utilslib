@@ -1,12 +1,7 @@
-name: publish Doc
+name: publish publish-vscode-extension-fe-integration
 
 on:
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -23,11 +18,9 @@ jobs:
           cache: "pnpm"
       - run: |
           pnpm i
-          pnpm build:doc
-      - name: upload production artifacts
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: docs
-      - name: Deploy doc to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+          pnpm build
+      - name: Publish
+        if: success()
+        run: npm run deploy -C vscodeExtension/fe-integration
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
