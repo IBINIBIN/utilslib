@@ -1,0 +1,55 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "build",
+      "request": "launch",
+      "runtimeArgs": ["run-script", "build"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "getCssCodeList",
+      "program": "${workspaceFolder}/vscodeExtension/fe-integration/build/getCssCodeList.js",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "getJsCodeList",
+      "program": "${workspaceFolder}/vscodeExtension/fe-integration/build/getJsCodeList.mjs",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/vscodeExtension/fe-integration"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/vscodeExtension/fe-integration/out/**/*.js"
+      ],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/vscodeExtension/fe-integration",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/vscodeExtension/fe-integration/out/test/**/*.js"
+      ],
+      "preLaunchTask": "${defaultBuildTask}"
+    }
+  ]
+}

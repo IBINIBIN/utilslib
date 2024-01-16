@@ -1,0 +1,32 @@
+{
+  "name": "@utilslib/core",
+  "version": "0.0.9",
+  "description": "",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js"
+    }
+  },
+  "scripts": {},
+  "keywords": [
+    "javascript",
+    "util"
+  ],
+  "author": "ibin <ibin@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Tuan/utilslib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/T-Tuan/utilslib.git/issues"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}

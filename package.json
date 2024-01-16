@@ -1,0 +1,53 @@
+{
+  "name": "@utilslib/monorepo",
+  "version": "0.0.1",
+  "private": "true",
+  "type": "module",
+  "description": "",
+  "engines": {
+    "node": ">=16",
+    "pnpm": "8"
+  },
+  "scripts": {
+    "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
+    "build:doc": "node build/docBuild.js",
+    "build:doc-config": "typedoc --options config/typedoc.config.js",
+    "build": "cross-env NODE_ENV=production rollup -c",
+    "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
+    "fe-integration:patch": "npm -C vscodeExtension/fe-integration version patch",
+    "core:patch": "npm -C packages/core version patch",
+    "dom:patch": "npm -C packages/dom version patch",
+    "core:minor": "npm -C packages/core version minor",
+    "dom:minor": "npm -C packages/dom version minor",
+    "dom:major": "npm -C packages/dom version major",
+    "core:major": "npm -C packages/core version major"
+  },
+  "dependencies": {
+    "@babel/core": "^7.23.2",
+    "@babel/preset-env": "^7.23.2",
+    "cross-env": "^7.0.3",
+    "glob": "^10.3.10",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "typedoc": "^0.25.2",
+    "typedoc-plugin-markdown": "^3.16.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^5.0.1",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/pluginutils": "^5.1.0",
+    "cheerio": "1.0.0-rc.12",
+    "codesandbox": "^2.2.3",
+    "node-fetch": "^3.3.2",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^4.1.4",
+    "tslib": "^2.6.2",
+    "typedoc-plugin-mdn-links": "^3.1.0",
+    "typescript": "^5.2.2",
+    "uuid": "^9.0.1"
+  }
+}
