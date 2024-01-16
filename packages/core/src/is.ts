@@ -27,7 +27,7 @@ export function isDef<T extends unknown>(value: T | undefined): value is T {
  * @returns 如果值为 Undefined 类型，则返回 true，否则返回 false。
  */
 export function isUndefined(value: unknown): value is undefined {
-  return getType(value) === "Undefined";
+  return typeof value === "undefined";
 }
 
 /**
@@ -47,7 +47,7 @@ export function isNull(value: unknown): value is null {
  * @returns 如果值为 boolean 类型，则返回 true，否则返回 false。
  */
 export function isBoolean(value: unknown): value is boolean {
-  return getType(value) === "Boolean";
+  return typeof value === "boolean";
 }
 
 /**
@@ -57,7 +57,7 @@ export function isBoolean(value: unknown): value is boolean {
  * @returns 如果值为 Number 类型，则返回 true，否则返回 false。
  */
 export function isNumber(value: unknown): value is number {
-  return getType(value) === "Number";
+  return typeof value === "number";
 }
 
 /**
@@ -67,7 +67,7 @@ export function isNumber(value: unknown): value is number {
  * @returns 如果值为 String 类型，则返回 true，否则返回 false。
  */
 export function isString(value: unknown): value is string {
-  return getType(value) === "String";
+  return typeof value === "string";
 }
 
 export function isBigInt(value: unknown): value is BigInt {
@@ -214,9 +214,7 @@ export function isNullOrUndefined(value: unknown): value is undefined | null {
  * @param value - 要检查的值。
  * @returns 如果值为 `undefined` 或 `null`，则返回 `true`，否则返回 `false`。
  */
-export function isNonNullable<T extends unknown>(
-  value: T
-): value is NonNullable<T> {
+export function isNonNullable<T extends unknown>(value: T): value is NonNullable<T> {
   return !isNullOrUndefined(value);
 }
 
@@ -303,10 +301,7 @@ export function isHasArray(value: unknown): value is any[] {
  * @param options - 选项，可以是单个对象或对象数组。
  * @returns 若目标项在选项中，则返回 true；否则返回 false。
  */
-export function isTargetInOptions<T>(
-  target: T,
-  ...options: (T | T[])[]
-): boolean {
+export function isTargetInOptions<T>(target: T, ...options: (T | T[])[]): boolean {
   return options.some((option) => {
     if (Array.isArray(option)) {
       return option.some((item) => item === target);
@@ -322,10 +317,7 @@ export function isTargetInOptions<T>(
  * @param range - 范围，包含最小值和最大值。
  * @returns 如果值在范围内，则返回 true，否则返回 false。
  */
-export function isValueInRange(
-  value: number,
-  range: [number, number]
-): boolean {
+export function isValueInRange(value: number, range: [number, number]): boolean {
   const [min, max] = range;
   return value >= min && value <= max;
 }
