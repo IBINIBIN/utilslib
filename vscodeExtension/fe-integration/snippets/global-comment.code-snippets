@@ -1,0 +1,35 @@
+{
+  "comment divider": {
+    "prefix": "comment divider",
+    "body": [
+      "$BLOCK_COMMENT_START==========================================  $1  ==========================================$BLOCK_COMMENT_END",
+    ],
+    "description": "comment divider"
+  },
+  "comment divider section": {
+    "prefix": "comment section",
+    "body": [
+      "$BLOCK_COMMENT_START======================================  $1 -- start  ======================================$BLOCK_COMMENT_END",
+      "$2\n",
+      "$BLOCK_COMMENT_START---------------------------------------  $1 -- end  ---------------------------------------$BLOCK_COMMENT_END",
+      "",
+    ],
+    "description": "comment section"
+  },
+  "comment divider start": {
+    "prefix": "comment start",
+    "body": [
+      "$BLOCK_COMMENT_START======================================  $1 -- start  ======================================$BLOCK_COMMENT_END",
+      "$2\n",
+    ],
+    "description": "comment start"
+  },
+  "comment divider end": {
+    "prefix": "comment end",
+    "body": [
+      "$BLOCK_COMMENT_START---------------------------------------  $1 -- end  ---------------------------------------$BLOCK_COMMENT_END",
+      "",
+    ],
+    "description": "comment end"
+  },
+}
