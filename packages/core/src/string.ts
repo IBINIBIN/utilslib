@@ -7,11 +7,10 @@ import { isEmptyString, isHasString, isString } from "./is";
  * @example
  * ```ts
  * generateRandomString(8) // => "aBcDeFgH"
- * 
+ *
  */
 export function generateRandomString(length: number = 8): string {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomString = "";
 
   for (let i = 0; i < length; i++) {
@@ -39,8 +38,8 @@ export function getBasename(path: string): string {
  * @param fileName - 文件名。
  * @returns 提取的文件名。
  */
-export function getFileName<T>(fileName: string): string | '' {
-  const name = getBasename(fileName)
+export function getFileName<T>(fileName: string): string | "" {
+  const name = getBasename(fileName);
   const lastDotIndex = name.lastIndexOf(".");
   if (lastDotIndex === -1) {
     return name;
@@ -54,9 +53,9 @@ export function getFileName<T>(fileName: string): string | '' {
  * @param filename - 文件名。
  * @returns 文件名的后缀。
  */
-// export const getFileExtension = (filename: string): string => {
-//   return filename.slice(filename.lastIndexOf(".") + 1);
-// };
+export const getFileExtension = (filename: string): string | "" => {
+  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
+};
 
 /**
  * 格式化价格，添加千位分隔符并保留指定的小数位数。
@@ -65,10 +64,7 @@ export function getFileName<T>(fileName: string): string | '' {
  * @param decimalPlaces - 可选的小数位数，默认为不处理小数位数。
  * @returns 格式化后的价格。
  */
-export function formatPrice(
-  value: string | number,
-  decimalPlaces: number = -1
-): string {
+export function formatPrice(value: string | number, decimalPlaces: number = -1): string {
   const numberValue = typeof value === "number" ? value : parseFloat(value);
   if (isNaN(numberValue)) {
     return value.toString();
@@ -90,18 +86,7 @@ export function formatPrice(
  */
 export function numberToChinese(value: string | number): string {
   const numberValue = typeof value === "number" ? value.toString() : value;
-  const chineseDigits = [
-    "零",
-    "一",
-    "二",
-    "三",
-    "四",
-    "五",
-    "六",
-    "七",
-    "八",
-    "九",
-  ];
+  const chineseDigits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
   const chineseUnits = ["", "十", "百", "千", "万", "亿"];
 
   const numArray = Array.from(numberValue).reverse();
@@ -129,13 +114,13 @@ export function numberToChinese(value: string | number): string {
  *
  * @param camelCase - 要转换的小驼峰命名字符串。
  * @returns 转换后的蛇形变量名称。
- * 
+ *
  * @example
  * 随便写点文案
  * ```
  * console
  * ```
- * 
+ *
  * @example
  * ```js
  * camelToSnake('fooBar') // => 'foo_bar'

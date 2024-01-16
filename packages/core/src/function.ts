@@ -43,11 +43,3 @@ export async function catchError<F extends (...args: any) => any, R = UnpackProm
     return [err, data, errMsg];
   }
 }
-
-/**
-export function retry(fn: Function, retryCount: number = 0) {
-  return function (this: unknown) {
-    fn.apply(this, arguments);
-  };
-}
- */
