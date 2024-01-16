@@ -1,0 +1,18 @@
+{
+  "console log": {
+    "scope": "html,vue,javascript,typescript,javascriptreact,typescriptreact",
+    "prefix": ["logMsg", "lm"],
+    "body": ["console.log(`$CLIPBOARD: `, $1);"],
+    "description": "log"
+  },
+  "test": {
+    "key": "cmd+k cmd+p",
+    "command": "editor.action.insertSnippet",
+    // "when": "editorTextFocus",
+    "args": {
+      "snippet": "console.log($1)$0",
+      "langId": "vue", // 对应的语言
+    "name": "myFavSnippet" // 片段的键名
+    }
+  }
+}

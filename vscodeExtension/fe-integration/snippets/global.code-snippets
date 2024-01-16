@@ -1,0 +1,15 @@
+{
+  "vueOptionsTemplate": {
+    "prefix": ["caojiabin"],
+    "body": [`"didnsofjdidniddni"`],
+    "description": "caojib选项式模版"
+  },
+  "caojiabintest": {
+    "key": "cmd+u",
+    "command": "editor.action.insertSnippet",
+    "when": "editorTextFocus",
+    "args": {
+      "snippet": "console.log($1)$0"
+    }
+  }
+}

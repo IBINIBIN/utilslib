@@ -3,3 +3,6 @@ lib
 **/dist
 doc
 docs
+out
+.vscode-test/
+*.vsix

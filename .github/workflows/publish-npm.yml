@@ -122,8 +122,10 @@ jobs:
 
   push:
     runs-on: ubuntu-latest
+    permissions: write-all
+    needs: build
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Git
@@ -132,16 +134,18 @@ jobs:
           git config --global user.email 'ibin@qq.com'
       - name: Upgrade
         run: |
-          npm run fe-integration:patch
+          cd vscodeExtension/fe-integration
+          npm version patch
 
       - name: Commit and push
         run: |
           git add .
-          git commit -m 'feat: fe-integration patch'
+          git commit -m "feat: fe-integration patch"
           git push
 
   trigger:
     runs-on: ubuntu-latest
+    needs: push
     steps:
       - name: Trigger doc workflow
         run: |
