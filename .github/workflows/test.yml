@@ -11,6 +11,7 @@ env:
 jobs:
   trigger:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Trigger doc workflow
         run: |
