@@ -29,3 +29,24 @@ export function clampNumberWithinRange(numberToClamp: number, range: [number, nu
   const [min, max] = range;
   return Math.max(min, Math.min(numberToClamp, max));
 }
+
+/**
+ * 将值或值数组转换为数组。
+ *
+ * @param value - 要转换的值或值数组。
+ * @returns 转换后的数组。
+ * @example
+ * const result = toArray("value"); // ['value']
+ * const resultArray = toArray(["value1", "value2"]); // ['value1', 'value2']
+ */
+export function toArray<T>(value: T | T[]): T[] {
+  let list: T[];
+
+  if (Array.isArray(value)) {
+    list = value;
+  } else {
+    list = [value];
+  }
+
+  return list;
+}

@@ -14,7 +14,6 @@
     "build:doc-config": "typedoc --options config/typedoc.config.js",
     "build": "cross-env NODE_ENV=production rollup -c",
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
-    "fe-integration:patch": "npm -C vscodeExtension/fe-integration version patch",
     "core:patch": "npm -C packages/core version patch",
     "dom:patch": "npm -C packages/dom version patch",
     "core:minor": "npm -C packages/core version minor",
