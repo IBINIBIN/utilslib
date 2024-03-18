@@ -37,9 +37,7 @@ export function getLinesCountAfterInsertion(
  * @param imageUrl - 图片链接。
  * @returns 返回一个 Promise，解析为包含宽度和高度的对象 { width, height }。
  */
-export function getImageSize(
-  imageUrl: string
-): Promise<{ width: number; height: number }> {
+export function getImageSize(imageUrl: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => {
@@ -85,12 +83,10 @@ export function listenClickOutside<T extends string | Element>(
       .flat();
   }
 
-  targets = targets.filter(el => el instanceof Element);
+  targets = targets.filter((el) => el instanceof Element);
 
   const handleClickOutside = (event: MouseEvent) => {
-    const isClickOutside = targets.every(
-      (target) => !target.contains(event.target as Node)
-    );
+    const isClickOutside = targets.every((target) => !target.contains(event.target as Node));
     if (isClickOutside) {
       callback();
     }
@@ -106,17 +102,27 @@ export function listenClickOutside<T extends string | Element>(
 /**
  * 下载一个 Blob 对象作为指定文件名的文件。
  *
+ * @param url - 要下载的文件链接
  * @param fileName - 要保存的文件名。
- * @param blob - 要下载的 Blob 对象。
  */
-export function downloadFile(type: 'blob' | 'src',fileName: string, blob: Blob): void {
+export function downloadFileByUrl(url: string, fileName: string): void {
   const downloadLink = document.createElement("a");
-
-  downloadLink.href = URL.createObjectURL(blob);
+  downloadLink.href = url;
   downloadLink.download = fileName;
-
   downloadLink.click();
-  URL.revokeObjectURL(downloadLink.href);
+  downloadLink.remove();
+}
+
+/**
+ * 下载一个 Blob 对象作为指定文件名的文件。
+ *
+ * @param blob - 要下载的 Blob 对象。
+ * @param fileName - 要保存的文件名。
+ */
+export function downloadFile(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  downloadFileByUrl(url, fileName);
+  URL.revokeObjectURL(url);
 }
 
 /**
@@ -127,7 +133,7 @@ export function downloadFile(type: 'blob' | 'src',fileName: string, blob: Blob):
  */
 export function loadJS(
   files: string | string[],
-  config?: Pick<Partial<HTMLScriptElement>, 'type'|'async'> 
+  config?: Pick<Partial<HTMLScriptElement>, "type" | "async">
 ): Promise<void[]> {
   // 获取head标签
   const head = document.getElementsByTagName("head")[0];
