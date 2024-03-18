@@ -4,13 +4,13 @@
  * @param func - 要执行的方法。
  * @returns 返回一个新的方法，该方法只会执行一次
  */
-export function once(fn: Function) {
+export function once(fn: (...args: any) => any) {
   // 利用闭包判断函数是否执行过
   let called = false;
   return function (this: unknown) {
     if (!called) {
       called = true;
-      return fn.apply(this, arguments);
+      return fn.apply(this, [...arguments]);
     }
   };
 }
@@ -32,7 +32,7 @@ export async function catchError<F extends (...args: any) => any, R = UnpackProm
   let errMsg: unknown | null;
 
   try {
-    data = await fn.apply(this, arguments);
+    data = await fn.apply(this, [...arguments]);
     err = 0;
     errMsg = null;
     return [err, data as R, errMsg as null];
