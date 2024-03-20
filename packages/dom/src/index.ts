@@ -1,4 +1,4 @@
-import { isString, isHasObject } from "@utilslib/core";
+import { isHasObject, toArray } from "@utilslib/core";
 
 /**
  * 获取给定内容插入到指定 DOM 节点后，该节点在父容器中占据的行数。
@@ -57,36 +57,25 @@ export function getImageSize(imageUrl: string): Promise<{ width: number; height:
  * @param callback - 鼠标点击事件不包含目标元素时触发的回调函数。
  * @returns 一个函数，用于销毁监听事件。
  */
-export function listenClickOutside<T extends string | Element>(
+export function listenClickOutside<T extends string | Element | undefined>(
   target: T | T[],
   callback: () => void
 ): () => void {
-  let targets: Element[] = [];
+  function getEls(target: any): Element[] {
+    if (typeof target === "string") {
+      return [...document.querySelectorAll(target)].filter(Boolean);
+    } else if (target instanceof Element) {
+      return toArray(target);
+    } else if (Array.isArray(target)) {
+      return target.map((i) => getEls(i)).flat();
+    }
 
-  if (typeof target === "string") {
-    targets = [...document.querySelectorAll(target)].filter(Boolean);
-  } else if (target instanceof Element) {
-    targets = [target];
-  } else if (Array.isArray(target)) {
-    targets = target
-      .map((item) => {
-        if (isString(item)) {
-          return [...document.querySelectorAll(item)].filter(
-            (item): item is Element => item instanceof Element
-          );
-        } else if (item instanceof Element) {
-          return [item];
-        } else {
-          return [];
-        }
-      })
-      .flat();
+    return [];
   }
 
-  targets = targets.filter((el) => el instanceof Element);
-
   const handleClickOutside = (event: MouseEvent) => {
-    const isClickOutside = targets.every((target) => !target.contains(event.target as Node));
+    const els = getEls(target).filter((el) => el instanceof Element);
+    const isClickOutside = els.every((target) => !target.contains(event.target as Node));
     if (isClickOutside) {
       callback();
     }
@@ -105,7 +94,7 @@ export function listenClickOutside<T extends string | Element>(
  * @param url - 要下载的文件链接
  * @param fileName - 要保存的文件名。
  */
-export function downloadFileByUrl(url: string, fileName: string): void {
+export function downloadFileByUrl(url: string, fileName: string = ""): void {
   const downloadLink = document.createElement("a");
   downloadLink.href = url;
   downloadLink.download = fileName;
@@ -119,9 +108,32 @@ export function downloadFileByUrl(url: string, fileName: string): void {
  * @param blob - 要下载的 Blob 对象。
  * @param fileName - 要保存的文件名。
  */
-export function downloadFile(blob: Blob, fileName: string): void {
+export function downloadFileByBlob(blob: Blob, fileName: string = ""): void {
   const url = URL.createObjectURL(blob);
   downloadFileByUrl(url, fileName);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * 下载文件。
+ *
+ * @param src - 要下载的资源（可以是字符串或 Blob 对象）
+ * @param fileName - 要保存的文件名。
+ */
+export function downloadFile(src: Blob | string, fileName: string = ""): void {
+  let url;
+  if (typeof src === "string") {
+    url = src;
+  } else {
+    url = URL.createObjectURL(src);
+  }
+
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = fileName;
+  downloadLink.click();
+  downloadLink.remove();
+
   URL.revokeObjectURL(url);
 }
 
@@ -138,7 +150,7 @@ export function loadJS(
   // 获取head标签
   const head = document.getElementsByTagName("head")[0];
 
-  if (isString(files)) files = [files];
+  files = toArray(files);
 
   // 使用 Promise.all 并行加载所有文件
   return Promise.all(
