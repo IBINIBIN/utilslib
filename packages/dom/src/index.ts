@@ -1,4 +1,7 @@
 import { isHasObject, toArray } from "@utilslib/core";
+export * from "./dom";
+export * from "./clipboard";
+export * from "./easing";
 
 /**
  * 获取给定内容插入到指定 DOM 节点后，该节点在父容器中占据的行数。
@@ -9,19 +12,18 @@ import { isHasObject, toArray } from "@utilslib/core";
  * @param insertBefore - 要插入在哪个 DOM 节点之前，默认为 null，表示插入到末尾。
  * @returns 插入内容后节点在父容器中占据的行数。
  */
-export function getLinesCountAfterInsertion(
+export function getLinesCountAfterInsertion<C = string | HTMLElement>(
   parent: HTMLElement,
-  content: string | HTMLElement,
+  content: C,
   insertBefore: HTMLElement | null = null
 ): number {
-  const clone = document.createElement("div");
-  clone.style.cssText = "visibility: hidden;";
-
+  let clone: string | HTMLElement = document.createElement("div");
   if (typeof content === "string") {
     clone.innerHTML = content;
   } else if (content instanceof HTMLElement) {
-    clone.appendChild(content);
+    clone = content;
   }
+  clone.style.cssText = "visibility: hidden;";
 
   parent.insertBefore(clone, insertBefore);
   const lineHeight = parseFloat(getComputedStyle(clone).lineHeight);

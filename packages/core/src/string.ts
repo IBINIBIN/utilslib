@@ -116,12 +116,6 @@ export function numberToChinese(value: string | number): string {
  * @returns 转换后的蛇形变量名称。
  *
  * @example
- * 随便写点文案
- * ```
- * console
- * ```
- *
- * @example
  * ```js
  * camelToSnake('fooBar') // => 'foo_bar'
  * camelToSnake('fooBarBaz') // => 'foo_bar_baz'
