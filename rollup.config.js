@@ -37,35 +37,28 @@ const createOutputList = (name, enter) => {
     },
   };
 
-  const distOutputList = Object.entries(outputConfigs).map(
-    ([format, config]) => {
-      return {
-        ...config,
-        file: path.resolve(getPackageDistPath(enter), `index.${format}.js`),
-        freeze: true,
-      };
-    }
-  );
+  const distOutputList = Object.entries(outputConfigs).map(([format, config]) => {
+    return {
+      ...config,
+      file: path.resolve(getPackageDistPath(enter), `index.${format}.js`),
+      freeze: true,
+    };
+  });
 
-  const libOutputList = Object.entries(outputConfigs).map(
-    ([format, config]) => {
-      return {
-        ...config,
-        file: path.resolve(getPackageLibPath(enter), `index.${format}.js`),
-        freeze: true,
-      };
-    }
-  );
+  const libOutputList = Object.entries(outputConfigs).map(([format, config]) => {
+    return {
+      ...config,
+      file: path.resolve(getPackageLibPath(enter), `index.${format}.js`),
+      freeze: true,
+    };
+  });
 
   return [distOutputList, libOutputList];
 };
 
 const createConfig = (enter) => {
   const { name } = JSON.parse(
-    readFileSync(
-      path.resolve(getPackageDistPath(enter), "..", "package.json"),
-      "utf-8"
-    )
+    readFileSync(path.resolve(getPackageDistPath(enter), "..", "package.json"), "utf-8")
   );
   const [packageName, subPackageName] = name.slice(1).split("/");
 
@@ -89,10 +82,12 @@ const createConfig = (enter) => {
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[0],
+      external: [/node_modules/],
       plugins: [
         ...basePlugins,
         typescript({
           target: "ES6",
+          sourceMap: false,
         }),
         esbuild({
           minify: process.env.NODE_ENV === "production",
@@ -104,12 +99,14 @@ const createConfig = (enter) => {
     },
     // 构建 js 代码。 提供不方便下载此包的用户直接复制
     {
+      external: [/node_modules/],
       input: enter,
       output: createOutputList(packageBundleName, enter)[1],
       plugins: [
         ...basePlugins,
         typescript({
           target: "ESNext",
+          sourceMap: false,
         }),
         clear({
           targets: [getPackageLibPath(enter)],
@@ -136,6 +133,4 @@ const createConfig = (enter) => {
 };
 
 /** @type {import('rollup').RollupOptions} */
-export default globalEnterFile
-  .map((enter) => createConfig(enter))
-  .flat(Infinity);
+export default globalEnterFile.map((enter) => createConfig(enter)).flat(Infinity);

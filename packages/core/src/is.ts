@@ -239,22 +239,6 @@ export function isHasString(value: unknown): value is string {
 }
 
 /**
- * 检查一个值是否为空。
- *
- * @param value - 要检查的值。
- * @returns 如果值为空，则返回 true，否则返回 false。
- */
-export function isEmpty(value: unknown): value is undefined | null | [] | "" {
-  return (
-    isUndefined(value) ||
-    isNull(value) ||
-    isEmptyArray(value) ||
-    isEmptyObject(value) ||
-    isEmptyString(value)
-  );
-}
-
-/**
  * 检查一个值是否为空对象。
  *
  * @param value - 要检查的值。
@@ -282,6 +266,22 @@ export function isHasObject(value: unknown): value is object {
  */
 export function isEmptyArray(value: unknown): value is any[] {
   return Array.isArray(value) && value.length === 0;
+}
+
+/**
+ * 检查一个值是否为空。
+ *
+ * @param value - 要检查的值。
+ * @returns 如果值为空，则返回 true，否则返回 false。
+ */
+export function isEmpty(value: unknown): value is undefined | null | [] | "" {
+  return (
+    isUndefined(value) ||
+    isNull(value) ||
+    isEmptyArray(value) ||
+    isEmptyObject(value) ||
+    isEmptyString(value)
+  );
 }
 
 /**
