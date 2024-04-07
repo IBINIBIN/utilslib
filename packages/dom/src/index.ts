@@ -184,3 +184,119 @@ export function loadJS(
     })
   );
 }
+
+/**
+ * 用于添加事件监听器的函数
+ * @returns 返回一个函数，用于添加指定事件的监听器
+ */
+export const on = ((): any => {
+  if (Boolean(document.addEventListener)) {
+    return (
+      element: Node,
+      event: string,
+      handler: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ): any => {
+      if (element && event && handler) {
+        element.addEventListener(event, handler, options);
+      }
+    };
+  }
+  return (element: Node, event: string, handler: EventListenerOrEventListenerObject): any => {
+    if (element && event && handler) {
+      (element as any).attachEvent(`on${event}`, handler);
+    }
+  };
+})();
+
+/**
+ * 用于移除事件监听器的函数
+ * @returns 返回一个函数，用于移除指定事件的监听器
+ */
+export const off = ((): any => {
+  if (Boolean(document.removeEventListener)) {
+    return (
+      element: Node,
+      event: string,
+      handler: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ): any => {
+      if (element && event) {
+        element.removeEventListener(event, handler, options);
+      }
+    };
+  }
+  return (element: Node, event: string, handler: EventListenerOrEventListenerObject): any => {
+    if (element && event) {
+      (element as any).detachEvent(`on${event}`, handler);
+    }
+  };
+})();
+
+/**
+ * 检查一个DOM元素是否是另一个DOM元素的后代。
+ *
+ * @param parent - 要检查的父DOM元素。
+ * @param child - 要检查的子DOM元素。
+ * @returns 如果子元素是父元素的后代，则返回true，否则返回false。
+ */
+export function containerDom(
+  parent: Element | Iterable<any> | ArrayLike<any>,
+  child: any
+): boolean {
+  if (parent && child) {
+    let pNode = child;
+    while (pNode) {
+      if (parent === pNode) {
+        return true;
+      }
+      const { parentNode } = pNode;
+      pNode = parentNode;
+    }
+  }
+  return false;
+}
+
+/**
+ * 点击元素外部的处理函数。
+ *
+ * @param els - 要排除在外的元素或元素集合。
+ * @param cb - 点击元素外部时执行的回调函数。
+ */
+export function clickOut(els: Element | Iterable<any> | ArrayLike<any>, cb: () => void): void {
+  on(document, "click", (event: { target: Element }) => {
+    if (Array.isArray(els)) {
+      const isFlag = Array.from(els).every((item) => containerDom(item, event.target) === false);
+      return isFlag && cb && cb();
+    }
+    if (containerDom(els, event.target)) {
+      return false;
+    }
+    return cb && cb();
+  });
+}
+
+/**
+ * 创建一个用于管理事件监听器的工具函数
+ * @param elm - 要添加事件监听器的元素引用
+ * @returns 返回一个包含添加和清除事件监听器功能的对象
+ */
+export function attachListeners(elm: Element) {
+  const offs: Array<() => void> = [];
+  return {
+    add<K extends keyof HTMLElementEventMap>(
+      type: K,
+      listener: (ev: HTMLElementEventMap[K]) => void
+    ) {
+      if (!type) return;
+      on(elm, type, listener);
+      offs.push(() => {
+        off(elm, type, listener);
+      });
+    },
+    clean() {
+      offs.forEach((handler) => handler?.());
+      offs.length = 0;
+    },
+  };
+}
