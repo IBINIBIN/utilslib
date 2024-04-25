@@ -6,11 +6,10 @@ export * from "./easing";
 /**
  * 获取给定内容插入到指定 DOM 节点后，该节点在父容器中占据的行数。
  *
- * @bate
- * @param parent - 父容器 DOM 节点。
- * @param content - 要插入的内容。
- * @param insertBefore - 要插入在哪个 DOM 节点之前，默认为 null，表示插入到末尾。
- * @returns 插入内容后节点在父容器中占据的行数。
+ * @param {HTMLElement} parent - 父容器 DOM 节点。
+ * @param {string | HTMLElement} content - 要插入的内容。
+ * @param {HTMLElement | null} [insertBefore=null] - 要插入在哪个 DOM 节点之前，默认为 null，表示插入到末尾。
+ * @returns {number} 插入内容后节点在父容器中占据的行数。
  */
 export function getLinesCountAfterInsertion<C = string | HTMLElement>(
   parent: HTMLElement,
@@ -36,8 +35,8 @@ export function getLinesCountAfterInsertion<C = string | HTMLElement>(
 /**
  * 获取给定图片链接的宽度和高度。
  *
- * @param imageUrl - 图片链接。
- * @returns 返回一个 Promise，解析为包含宽度和高度的对象 { width, height }。
+ * @param {string} imageUrl - 图片链接。
+ * @returns {Promise<{ width: number; height: number }>} 返回一个 Promise，解析为包含宽度和高度的对象 { width, height }。
  */
 export function getImageSize(imageUrl: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
@@ -55,9 +54,9 @@ export function getImageSize(imageUrl: string): Promise<{ width: number; height:
 /**
  * 监听鼠标点击事件，如果点击事件不包含指定的元素，则触发回调函数，并返回一个销毁监听事件的方法。
  *
- * @param target - 要监听的目标元素或元素数组。
- * @param callback - 鼠标点击事件不包含目标元素时触发的回调函数。
- * @returns 一个函数，用于销毁监听事件。
+ * @param {string | Element | undefined | (string | Element | undefined)[]} target - 要监听的目标元素或元素数组。
+ * @param {() => void} callback - 鼠标点击事件不包含目标元素时触发的回调函数。
+ * @returns {() => void} 一个函数，用于销毁监听事件。
  */
 export function listenClickOutside<T extends string | Element | undefined>(
   target: T | T[],
@@ -93,8 +92,8 @@ export function listenClickOutside<T extends string | Element | undefined>(
 /**
  * 下载一个 Blob 对象作为指定文件名的文件。
  *
- * @param url - 要下载的文件链接
- * @param fileName - 要保存的文件名。
+ * @param {string} url - 要下载的文件链接
+ * @param {string} [fileName=""] - 要保存的文件名。
  */
 export function downloadFileByUrl(url: string, fileName: string = ""): void {
   const downloadLink = document.createElement("a");
@@ -107,8 +106,8 @@ export function downloadFileByUrl(url: string, fileName: string = ""): void {
 /**
  * 下载一个 Blob 对象作为指定文件名的文件。
  *
- * @param blob - 要下载的 Blob 对象。
- * @param fileName - 要保存的文件名。
+ * @param {Blob} blob - 要下载的 Blob 对象。
+ * @param {string} [fileName=""] - 要保存的文件名。
  */
 export function downloadFileByBlob(blob: Blob, fileName: string = ""): void {
   const url = URL.createObjectURL(blob);
@@ -119,8 +118,8 @@ export function downloadFileByBlob(blob: Blob, fileName: string = ""): void {
 /**
  * 下载文件。
  *
- * @param src - 要下载的资源（可以是字符串或 Blob 对象）
- * @param fileName - 要保存的文件名。
+ * @param {Blob | string} src - 要下载的资源（可以是字符串或 Blob 对象）
+ * @param {string} [fileName=""] - 要保存的文件名。
  */
 export function downloadFile(src: Blob | string, fileName: string = ""): void {
   let url;
@@ -142,8 +141,9 @@ export function downloadFile(src: Blob | string, fileName: string = ""): void {
 /**
  * 动态加载一组 JavaScript 文件。
  *
- * @param files - 要加载的 JavaScript 文件数组。
- * @returns 返回一个 Promise，在所有文件加载完成后解析。
+ * @param {string | string[]} files - 要加载的 JavaScript 文件数组。
+ * @param {Pick<Partial<HTMLScriptElement>, "type" | "async">} [config] - 配置选项，可选。
+ * @returns {Promise<void[]>} 返回一个 Promise，在所有文件加载完成后解析。
  */
 export function loadJS(
   files: string | string[],
