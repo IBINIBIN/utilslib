@@ -59,10 +59,12 @@ function findNode<T extends Record<string, any>>({
 /**
  * 使用深度优先搜索算法递归查找指定属性值的节点，并返回匹配节点的数据、父级数据列表和层级关系。
  *
- * @param arr - 要进行搜索的数组。
- * @param compareAttr - 需要查找的属性名。
- * @param nextLevelAttr - 子级循环字段
- * @param value - 需要查找的属性值。
+ * @type {<T extends Record<string, any>>(arr: T[], compareAttr: string, nextLevelAttr: string, value: unknown) => TargetData<T> | undefined}
+ * @param {T[]} arr - 要进行搜索的数组。
+ * @param {string} compareAttr - 需要查找的属性名。
+ * @param {string} nextLevelAttr - 子级循环字段
+ * @param {unknown} value - 需要查找的属性值。
+ * @returns {TargetData<T> | undefined} 匹配节点的数据、父级数据列表和层级关系。
  */
 export function findNodeByDFS<T extends Record<string, any>>(
   arr: NodeProps<T>["arr"],

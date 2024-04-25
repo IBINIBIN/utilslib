@@ -1,15 +1,15 @@
 import { isEmptyString, isHasString, isString } from "./is";
+
 /**
  * 生成指定长度的随机字符串。
  *
- * @param length - 随机字符串的长度。默认值为 8。
- * @returns 生成的随机字符串。
+ * @param {number} length - 随机字符串的长度。默认值为 8。
+ * @returns {string} 生成的随机字符串。
  * @example
  * ```ts
- * generateRandomString(8) // => "aBcDeFgH"
- *
+ * createRandomString(8) // => "aBcDeFgH"
  */
-export function generateRandomString(length: number = 8): string {
+export function createRandomString(length: number = 8): string {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomString = "";
 
@@ -24,8 +24,8 @@ export function generateRandomString(length: number = 8): string {
 /**
  * 从文件路径中提取文件名。
  *
- * @param path - 包含文件名的路径。
- * @returns 提取出的文件名。
+ * @param {string} path - 包含文件名的路径。
+ * @returns {string} 提取出的文件名。
  */
 export function getBasename(path: string): string {
   const match = path.match(/\/([^\/]+)$/);
@@ -35,8 +35,8 @@ export function getBasename(path: string): string {
 /**
  * 获取文件名（不包含扩展名）。
  *
- * @param fileName - 文件名。
- * @returns 提取的文件名。
+ * @param {string} fileName - 文件名。
+ * @returns {string | ""} 提取的文件名。
  */
 export function getFileName<T>(fileName: string): string | "" {
   const name = getBasename(fileName);
@@ -50,8 +50,8 @@ export function getFileName<T>(fileName: string): string | "" {
 /**
  * 获取文件名的后缀。
  *
- * @param filename - 文件名。
- * @returns 文件名的后缀。
+ * @param {string} filename - 文件名。
+ * @returns {string | ""} 文件名的后缀。
  */
 export const getFileExtension = (filename: string): string | "" => {
   return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
@@ -60,9 +60,9 @@ export const getFileExtension = (filename: string): string | "" => {
 /**
  * 格式化价格，添加千位分隔符并保留指定的小数位数。
  *
- * @param value - 要格式化的价格。
- * @param decimalPlaces - 可选的小数位数，默认为不处理小数位数。
- * @returns 格式化后的价格。
+ * @param {string | number} value - 要格式化的价格。
+ * @param {number} decimalPlaces - 可选的小数位数，默认为不处理小数位数。
+ * @returns {string} 格式化后的价格。
  */
 export function formatPrice(value: string | number, decimalPlaces: number = -1): string {
   const numberValue = typeof value === "number" ? value : parseFloat(value);
@@ -81,8 +81,8 @@ export function formatPrice(value: string | number, decimalPlaces: number = -1):
 /**
  * 将数字转换为中文数字。
  *
- * @param value - 要转换的数字。
- * @returns 转换后的中文数字。
+ * @param {string | number} value - 要转换的数字。
+ * @returns {string} 转换后的中文数字。
  */
 export function numberToChinese(value: string | number): string {
   const numberValue = typeof value === "number" ? value.toString() : value;
@@ -112,8 +112,8 @@ export function numberToChinese(value: string | number): string {
 /**
  * 将小驼峰命名转换为蛇形变量名称。
  *
- * @param camelCase - 要转换的小驼峰命名字符串。
- * @returns 转换后的蛇形变量名称。
+ * @param {string} camelCase - 要转换的小驼峰命名字符串。
+ * @returns {string} 转换后的蛇形变量名称。
  *
  * @example
  * ```js
@@ -131,8 +131,8 @@ export function camelToSnake(camelCase: string): string {
 /**
  * 将蛇形变量名称转换为小驼峰命名。
  *
- * @param snakeCase - 要转换的蛇形变量名称。
- * @returns 转换后的小驼峰命名。
+ * @param {string} snakeCase - 要转换的蛇形变量名称。
+ * @returns {string} 转换后的小驼峰命名。
  */
 export function snakeToCamel(snakeCase: string): string {
   return snakeCase.replace(/_([a-z])/g, function (_, char) {
@@ -143,9 +143,9 @@ export function snakeToCamel(snakeCase: string): string {
 /**
  * 格式化数字，如果超过指定值则显示为指定值+。
  *
- * @param value - 要格式化的数字。
- * @param threshold - 阈值，超过该值则显示为该值+。默认值为 99。
- * @returns 格式化后的字符串。
+ * @param {string | number} value - 要格式化的数字。
+ * @param {number} threshold - 阈值，超过该值则显示为该值+。默认值为 99。
+ * @returns {string} 格式化后的字符串。
  */
 export function formatNumber(value: string | number, threshold = 99): string {
   const num = Number(value);
@@ -164,8 +164,9 @@ export function formatNumber(value: string | number, threshold = 99): string {
 /**
  * 将单词的首字母转为大写并返回，如果无法转为大写则返回原单词。
  *
- * @param word - 要处理的单词。
- * @returns 首字母大写后的单词，如果无法转为大写或参数未提供则返回原单词。
+ * @type {<T>(word: T) => T}
+ * @param {T} word - 要处理的单词。
+ * @returns {T} 首字母大写后的单词，如果无法转为大写或参数未提供则返回原单词。
  */
 export function capitalize<T>(word: T): T {
   if (isString(word) && !isEmptyString(word)) {
