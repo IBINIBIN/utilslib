@@ -76,3 +76,53 @@ export function findNodeByDFS<T extends Record<string, any>>(
 }
 
 /*---------------------------------------  findNodeByDFS -- end  ---------------------------------------*/
+
+/**
+ * 打平嵌套的树形结构数组，并为每个节点添加 level 和 parentId 字段。
+ *
+ * @type {<
+ *   T extends { level?: never; parentId?: never; [key: string]: any; },
+ *   P extends keyof T,
+ *   ID extends keyof T,
+ *   R = T & { level: number; parentId: T[ID] }
+ * >(
+ *   arr: T[],
+ *   childrenProperty: P,
+ *   idAttr: ID,
+ *   includeParent?: boolean
+ * ) => R[]}
+ * @param {T[]} arr - 嵌套的树形结构数组。
+ * @param {P} childrenProperty - 子节点属性的键名。
+ * @param {ID} idAttr - 节点 ID 属性的键名。
+ * @param {boolean} [includeParent=true] - 是否包含父节点，默认为 true。
+ * @returns {R[]} 打平后的数组。
+ */
+export function flattenTreeArray<
+  T extends {
+    level?: never;
+    parentId?: never;
+    [key: string]: any;
+  },
+  P extends keyof T,
+  ID extends keyof T,
+  R = T & { level: number; parentId: T[ID] }
+>(arr: T[], childrenProperty: P, idAttr: ID, includeParent: boolean = true): R[] {
+  function flattenRecursive(nodes: T[], level: number, parentId: T[ID] | undefined): R[] {
+    return nodes.reduce((prev: R[], node: T) => {
+      const children: T[P] = node[childrenProperty];
+      const id: T[ID] = node[idAttr];
+      const flattenedNode: R = Object.assign(node, { level, parentId });
+
+      let childrenArray: R[] = [flattenedNode];
+      if (Array.isArray(children)) {
+        childrenArray = flattenRecursive(children, level + 1, id).concat(
+          includeParent ? flattenedNode : []
+        );
+      }
+
+      return prev.concat(childrenArray);
+    }, []);
+  }
+
+  return flattenRecursive(arr, 0, undefined);
+}

@@ -52,3 +52,81 @@ export function toArray<T>(value: T | T[]): T[] {
 
   return list;
 }
+
+/**
+ * 根据指定条件筛选列表
+ * @template T
+ * @param {T[]} list - 要筛选的列表
+ * @param {string | keyof T} property - 属性名或属性键
+ * @param {T[keyof T][]} includes - 包含的值列表
+ * @param {T[keyof T][]} [excludes] - 排除的值列表
+ * @returns {T[]} - 筛选后的列表
+ */
+export function filterList<T extends Record<string, any>, R extends keyof T>(
+  list: T[],
+  property: R,
+  includes: T[R][],
+  excludes?: T[R][]
+): T[];
+
+/**
+ * 根据指定条件筛选列表
+ * @template T
+ * @param {T[]} list - 要筛选的列表
+ * @param {T[]} includes - 包含的值列表
+ * @param {T[]} [excludes] - 排除的值列表
+ * @returns {T[]} - 筛选后的列表
+ */
+export function filterList<T>(list: T[], includes: T[], excludes?: T[]): T[];
+
+/**
+ * 根据指定条件筛选列表
+ * @template T
+ * @param {T[]} list - 要筛选的列表
+ * @param {any} arg1 - 属性名或包含的值列表
+ * @param {any[]} [arg2=[]] - 包含的值列表或排除的值列表
+ * @param {any[]} [arg3=[]] - 排除的值列表
+ * @returns {T[]} - 筛选后的列表
+ */
+export function filterList<T>(list: T[], arg1: any, arg2: any = [], arg3: any = []): T[] {
+  if (typeof arg1 === "string") {
+    const property = arg1;
+    const includes = arg2;
+    const excludes = arg3;
+
+    const includesSet = new Set(includes);
+    const excludesSet = new Set(excludes);
+
+    return list.filter((item) => {
+      if (includesSet.size > 0 && excludesSet.size > 0) {
+        return (
+          includesSet.has((item as any)[property]) && !excludesSet.has((item as any)[property])
+        );
+      } else if (includesSet.size > 0) {
+        return includesSet.has((item as any)[property]);
+      } else if (excludesSet.size > 0) {
+        return !excludesSet.has((item as any)[property]);
+      } else {
+        return true;
+      }
+    });
+  } else {
+    const includes = arg1 as T[];
+    const excludes = arg2 as T[];
+
+    const includesSet = new Set(includes);
+    const excludesSet = new Set(excludes);
+
+    return list.filter((item) => {
+      if (includesSet.size > 0 && excludesSet.size > 0) {
+        return includesSet.has(item) && !excludesSet.has(item);
+      } else if (includesSet.size > 0) {
+        return includesSet.has(item);
+      } else if (excludesSet.size > 0) {
+        return !excludesSet.has(item);
+      } else {
+        return true;
+      }
+    });
+  }
+}
