@@ -36,7 +36,7 @@ async function fetchCsbLinkHandler() {
       }
 
       const csbConfig = {
-        files:fileContents,
+        files: fileContents,
       };
 
       csbLinkMap.set(demoName, await createSandboxLink(csbConfig));
@@ -75,7 +75,7 @@ async function main() {
     } catch (error) {}
   });
 
-  /** 为所有导出的方法添加 @category 注释标签. 
+  /** 为所有导出的方法添加 @category 注释标签.
    * 根据文件名设置category
    */
   app.converter.on(Converter.EVENT_CREATE_DECLARATION, (ctx, decRef) => {
@@ -83,9 +83,7 @@ async function main() {
       let categoryName = path.parse(decRef.sources[0].fullFileName).name;
       categoryName = categoryName === "index" ? "所有方法" : categoryName;
 
-      const categoryTag = new CommentTag("@category", [
-        { kind: "text", text: categoryName },
-      ]);
+      const categoryTag = new CommentTag("@category", [{ kind: "text", text: categoryName }]);
       decRef.comment?.blockTags?.push(categoryTag);
     }
   });
@@ -102,16 +100,11 @@ async function main() {
         const currentItem = $(element);
         const text = currentItem.html();
 
-        const [_, name] =
-          text.match(new RegExp(`^${CodesandboxIdPrefix}(.*)$`)) || [];
+        const [_, name] = text.match(new RegExp(`^${CodesandboxIdPrefix}(.*)$`)) || [];
         if (name) {
           const link = csbLinkMap.get(name);
           if (link) {
-            currentItem.html(
-              generateSandboxIframe(
-                `${link}?view=split`
-              )
-            );
+            currentItem.html(generateSandboxIframe(`${link}?view=split`));
           }
         }
       });
@@ -124,7 +117,7 @@ async function main() {
   await fetchCsbLinkHandler();
 
   if (project) {
-    const outputDir = "docs";
+    const outputDir = "docs/typedoc";
     await app.generateDocs(project, outputDir);
   }
 }
