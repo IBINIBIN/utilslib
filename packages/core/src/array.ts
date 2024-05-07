@@ -53,80 +53,75 @@ export function toArray<T>(value: T | T[]): T[] {
   return list;
 }
 
+type OnlyObject = {
+  [key: string]: any;
+} & {
+  [key: string]: unknown;
+};
+
 /**
- * 根据指定条件筛选列表
- * @template T
- * @param {T[]} list - 要筛选的列表
- * @param {string | keyof T} property - 属性名或属性键
- * @param {T[keyof T][]} includes - 包含的值列表
- * @param {T[keyof T][]} [excludes] - 排除的值列表
- * @returns {T[]} - 筛选后的列表
+ * 根据指定属性值进行过滤列表。
+ *
+ * @template T - 列表中元素的类型。
+ * @template R - 属性的键名。
+ * @template U - 当T为对象类型时，U为R的类型；否则为undefined。
+ * @param {T[]} list - 要过滤的列表。
+ * @param {T extends OnlyObject
+ *   ? {
+ *       property: R;
+ *       includes?: unknown[];
+ *       excludes?: unknown[];
+ *     }
+ *   : Partial<{
+ *       property: undefined;
+ *       includes: unknown[];
+ *       excludes: unknown[];
+ *     }>} opts - 过滤选项，包括要过滤的属性名、包含的值数组和排除的值数组。
+ * @returns {T[]} 过滤后的列表。
+ * @type {<
+ *   T,
+ *   R extends keyof T,
+ *   U = T extends OnlyObject ? R : undefined
+ * >(
+ *   list: T[],
+ *   opts: T extends OnlyObject
+ *     ? {
+ *         property: R;
+ *         includes?: unknown[];
+ *         excludes?: unknown[];
+ *       }
+ *     : Partial<{
+ *         property: undefined;
+ *         includes: unknown[];
+ *         excludes: unknown[];
+ *       }>
+ * ) => T[]}
  */
-export function filterList<T extends Record<string, any>, R extends keyof T>(
+export function filterList<T, R extends keyof T, U = T extends OnlyObject ? R : undefined>(
   list: T[],
-  property: R,
-  includes: T[R][],
-  excludes?: T[R][]
-): T[];
-
-/**
- * 根据指定条件筛选列表
- * @template T
- * @param {T[]} list - 要筛选的列表
- * @param {T[]} includes - 包含的值列表
- * @param {T[]} [excludes] - 排除的值列表
- * @returns {T[]} - 筛选后的列表
- */
-export function filterList<T>(list: T[], includes: T[], excludes?: T[]): T[];
-
-/**
- * 根据指定条件筛选列表
- * @template T
- * @param {T[]} list - 要筛选的列表
- * @param {any} arg1 - 属性名或包含的值列表
- * @param {any[]} [arg2=[]] - 包含的值列表或排除的值列表
- * @param {any[]} [arg3=[]] - 排除的值列表
- * @returns {T[]} - 筛选后的列表
- */
-export function filterList<T>(list: T[], arg1: any, arg2: any = [], arg3: any = []): T[] {
-  if (typeof arg1 === "string") {
-    const property = arg1;
-    const includes = arg2;
-    const excludes = arg3;
-
-    const includesSet = new Set(includes);
-    const excludesSet = new Set(excludes);
-
-    return list.filter((item) => {
-      if (includesSet.size > 0 && excludesSet.size > 0) {
-        return (
-          includesSet.has((item as any)[property]) && !excludesSet.has((item as any)[property])
-        );
-      } else if (includesSet.size > 0) {
-        return includesSet.has((item as any)[property]);
-      } else if (excludesSet.size > 0) {
-        return !excludesSet.has((item as any)[property]);
-      } else {
-        return true;
+  opts: T extends OnlyObject
+    ? {
+        property: R;
+        includes?: unknown[];
+        excludes?: unknown[];
       }
-    });
-  } else {
-    const includes = arg1 as T[];
-    const excludes = arg2 as T[];
+    : Partial<{
+        property: undefined;
+        includes: unknown[];
+        excludes: unknown[];
+      }>
+): T[] {
+  const { property, includes = [], excludes = [] } = opts;
 
-    const includesSet = new Set(includes);
-    const excludesSet = new Set(excludes);
-
-    return list.filter((item) => {
-      if (includesSet.size > 0 && excludesSet.size > 0) {
-        return includesSet.has(item) && !excludesSet.has(item);
-      } else if (includesSet.size > 0) {
-        return includesSet.has(item);
-      } else if (excludesSet.size > 0) {
-        return !excludesSet.has(item);
-      } else {
-        return true;
-      }
-    });
-  }
+  return list.filter((item) => {
+    const val = property ? item[property] : item;
+    if (includes?.length && excludes?.length) {
+      return includes.includes(val) && !excludes.includes(val);
+    } else if (includes?.length) {
+      return includes.includes(val);
+    } else if (excludes?.length) {
+      return !excludes.includes(val);
+    }
+    return true;
+  });
 }
