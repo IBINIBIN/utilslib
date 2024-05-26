@@ -77,12 +77,14 @@ const createConfig = (enter) => {
     }),
   ];
 
+  const external = (id) => /node_modules/.test(id) && !id.includes("tslib");
+
   return [
     // 构建生产包
     {
       input: enter,
       output: createOutputList(packageBundleName, enter)[0],
-      external: [/node_modules/],
+      external,
       plugins: [
         ...basePlugins,
         typescript({
@@ -99,7 +101,7 @@ const createConfig = (enter) => {
     },
     // 构建 js 代码。 提供不方便下载此包的用户直接复制
     {
-      external: [/node_modules/],
+      external,
       input: enter,
       output: createOutputList(packageBundleName, enter)[1],
       plugins: [
