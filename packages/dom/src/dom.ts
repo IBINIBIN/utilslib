@@ -569,3 +569,28 @@ export function getScrollbarWidth() {
   document.body.removeChild(scrollDiv);
   return scrollbarWidth;
 }
+
+/**
+ * 监听DOM节点大小变化
+ * @param {Element} targetNode - 要监听的DOM节点
+ * @param {SizeChangeCallback} callback - 节点大小变化时的回调函数
+ * @returns {() => void} 返回一个取消监听的方法
+ */
+export function observeNodeSizeChange(
+  targetNode: Element,
+  callback: (rect: DOMRectReadOnly, entry: ResizeObserverEntry) => unknown
+): typeof NOOP {
+  // 创建一个ResizeObserver实例并将回调函数传入
+  const resizeObserver = new ResizeObserver(([entry]) => {
+    callback(entry.contentRect, entry);
+  });
+
+  // 开始观察目标节点的大小变化
+  resizeObserver.observe(targetNode);
+
+  // 返回一个取消观察的方法
+  return () => {
+    resizeObserver.unobserve(targetNode);
+    resizeObserver.disconnect();
+  };
+}
