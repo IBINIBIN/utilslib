@@ -1,9 +1,10 @@
 import { globSync } from "glob";
+import { fileURLToPath } from "url";
 
 /** @type {import('typedoc').TypeDocOptions} */
 export default {
   name: "@utilslib",
-  readme: "README.md",
+  readme: fileURLToPath(new URL("../README.md", import.meta.url)),
   entryPoints: globSync("packages/*").map((item) => "../" + item),
   entryPointStrategy: "packages",
   hideGenerator: true,

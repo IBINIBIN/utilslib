@@ -12,14 +12,16 @@
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
     "build:doc": "node build/docBuild.js",
     "build:doc-config": "typedoc --options config/typedoc.config.js",
-    "build": "cross-env NODE_ENV=production rollup -c",
+    "build:vscodeSnippets-ts": "node build/buildVscodeSnippets-ts.js",
+    "build:code": "cross-env NODE_ENV=production rollup -c",
+    "build": "npm run build:code && npm run build:vscodeSnippets-ts",
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
     "core:patch": "npm -C packages/core version patch",
     "dom:patch": "npm -C packages/dom version patch",
     "core:minor": "npm -C packages/core version minor",
     "dom:minor": "npm -C packages/dom version minor",
-    "dom:major": "npm -C packages/dom version major",
-    "core:major": "npm -C packages/core version major"
+    "core:major": "npm -C packages/core version major",
+    "dom:major": "npm -C packages/dom version major"
   },
   "dependencies": {
     "@babel/core": "^7.23.2",
@@ -44,6 +46,7 @@
     "node-fetch": "^3.3.2",
     "npm-run-all": "^4.1.5",
     "rollup": "^4.1.4",
+    "ts-morph": "^23.0.0",
     "tslib": "^2.6.2",
     "typedoc-plugin-mdn-links": "^3.1.0",
     "typescript": "^5.2.2",
