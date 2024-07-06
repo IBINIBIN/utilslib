@@ -20,6 +20,26 @@ function isTargetInOptions(target, ...options) {
   });
 }
 
+/**
+ * 将值或值数组转换为数组。
+ *
+ * @type {<T>(value: T | T[]) => T[]}
+ * @param {T | T[]} value - 要转换的值或值数组。
+ * @returns {T[]} 转换后的数组。
+ * @example
+ * const result = toArray("value"); // ['value']
+ * const resultArray = toArray(["value1", "value2"]); // ['value1', 'value2']
+ */
+function toArray(value) {
+  let list;
+  if (Array.isArray(value)) {
+    list = value;
+  } else {
+    list = [value];
+  }
+  return list;
+}
+
 function getExternalVariables(code) {
   const project = new Project();
   const sourceFile = project.createSourceFile("temp.ts", code);
@@ -172,6 +192,12 @@ function getExternalVariables(code) {
   return l;
 }
 
+function getCodeSourceNode(code) {
+  const project = new Project();
+  const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
+  return sourceFile;
+}
+
 let lastExternals = "";
 
 /**
@@ -182,6 +208,7 @@ let lastExternals = "";
  * @returns {string} - 外部变量的源代码
  */
 function getExternalVariableSources(filePath, externalVariables) {
+  const baseDir = path.dirname(filePath);
   const code = readFileContent(filePath);
   const project = new Project();
   const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
@@ -204,14 +231,37 @@ function getExternalVariableSources(filePath, externalVariables) {
       const declaration = identifierNode.getDefinitionNodes()[0];
 
       if (declaration) {
-        const text = declaration.getFullText();
+        let text = "";
+        const importDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
+        const varDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.VariableStatement);
+        if (varDeclaration) {
+          text = varDeclaration.getFullText();
+        } else if (importDeclaration) {
+          const exportRelatedPath = importDeclaration
+            .getModuleSpecifier()
+            ?.getText()
+            .replace(/['"]/g, "");
+          const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+          const exportsMap = getAllExportNode(resolvedPath);
+
+          let targetPath = "";
+          for (const [key, val] of exportsMap) {
+            const target = val.find((item) => item === declaration.getText());
+            if (target) {
+              targetPath = key;
+            }
+          }
+          text = getExternalVariableSources(targetPath, [declaration.getText()]);
+        } else {
+          text = declaration.getFullText();
+        }
+        text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
         externalSources.push(text);
       }
     }
   }
-  Node.isDefaultClause();
 
-  let text = externalSources.join("");
+  let text = externalSources.join("\n");
   const externals = getExternalVariables(text);
   if (externals.length && lastExternals !== JSON.stringify(externals)) {
     lastExternals = JSON.stringify(externals);
@@ -219,7 +269,40 @@ function getExternalVariableSources(filePath, externalVariables) {
     externalSources.unshift(newExternals);
   }
 
-  return externalSources.join("");
+  return externalSources.join("\n\n");
+}
+
+/**
+ * 获取外部变量的源代码
+ *
+ * @param {string} filePath - 文件路径
+ * @param {string} exportName - 导出的变量名
+ * @returns {string} - 外部变量的源代码
+ */
+function getExportSources(filePath, exportName) {
+  console.log(`当前处理:`, exportName);
+  let code = getExternalVariableSources(filePath, [exportName]);
+  const project = new Project();
+  const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
+  let commentText = "";
+  // 获取export声明变量
+  sourceFile.forEachChild((node) => {
+    if (node.getName?.() === exportName) {
+      commentText = node
+        .getJsDocs()
+        .find((Jsdoc) => Jsdoc.getCommentText?.())
+        ?.getCommentText?.();
+    } else if (node.hasExportKeyword?.()) {
+      node.setIsExported(false);
+    }
+  });
+
+  return {
+    code: sourceFile.getFullText(),
+    type: "ts",
+    name: exportName,
+    intro: commentText,
+  };
 }
 
 /**
@@ -254,52 +337,150 @@ function readFileContent(filePath) {
   throw new Error(`File not found: ${filePath}`);
 }
 
-function getIntegratedCode(filePath) {
-  const code = readFileContent(filePath);
-  const baseDir = path.dirname(filePath);
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__getExportedVariables", code, { overwrite: false });
+/**
+ * 检查一个值是否为非空数组。
+ *
+ * @param {unknown} value - 要检查的值。
+ * @returns {value is any[]} 如果值为非空数组，则返回 true，否则返回 false。
+ */
+function isHasArray(value) {
+  return Array.isArray(value) && value.length > 0;
+}
 
-  let exports = [];
-
-  sourceFile.forEachChild((node) => {
-    if (node.isExported?.()) {
-      const name = node.getName?.();
-      if (name) {
-        console.log(`当前处理:`, name);
-        const code = getExternalVariableSources(filePath, [node.getName()]);
-        const commentText = node
-          .getJsDocs()
-          .find((Jsdoc) => Jsdoc.getCommentText?.())
-          ?.getCommentText?.();
-        exports.push({
-          code,
-          type: "ts",
-          name,
-          intro: commentText,
-        });
+function mergeMaps(map1, map2) {
+  const mergedMap = new Map();
+  // 遍历第一个Map对象
+  for (const [key, value] of map1) {
+    // 如果mergedMap中已经有该键,则将值合并为数组
+    if (mergedMap.has(key)) {
+      const existingValue = mergedMap.get(key);
+      if (Array.isArray(existingValue)) {
+        mergedMap.set(key, [...existingValue, value]);
+      } else {
+        mergedMap.set(key, [existingValue, value]);
       }
+    } else {
+      // 否则直接添加键值对
+      mergedMap.set(key, value);
     }
+  }
 
-    if (node.getKind() === SyntaxKind.ExportDeclaration) {
-      const moduleSpecifier = node.getModuleSpecifier()?.getText().replace(/['"]/g, "");
-      const resolvedPath = resolveImportPath(moduleSpecifier, baseDir);
-      const l = getIntegratedCode(resolvedPath);
-      exports.push(...l);
+  // 遍历第二个Map对象
+  for (const [key, value] of map2) {
+    // 如果mergedMap中已经有该键,则将值合并为数组
+    if (mergedMap.has(key)) {
+      const existingValue = mergedMap.get(key);
+      if (Array.isArray(existingValue)) {
+        mergedMap.set(key, [...existingValue, value]);
+      } else {
+        mergedMap.set(key, [existingValue, value]);
+      }
+    } else {
+      // 否则直接添加键值对
+      mergedMap.set(key, value);
+    }
+  }
+
+  return mergedMap;
+}
+
+const exportFileMap = new Map();
+
+/**
+ * 从指定文件中获取所有导出节点
+ * @param {string} sourceFilePath - 源文件路径
+ * @returns {void}
+ */
+function getAllExportNode(sourceFilePath) {
+  if (exportFileMap.has(sourceFilePath)) {
+    return exportFileMap.get(sourceFilePath);
+  }
+
+  const baseDir = path.dirname(sourceFilePath);
+  const code = readFileContent(sourceFilePath);
+  const project = new Project();
+  const sourceFile = project.createSourceFile("__getAllExportNode.ts", code);
+
+  const typeChecker = project.getTypeChecker();
+
+  let allExportMap = new Map();
+  // let exportNameMap = new Map()
+  function addExportMap(key, val) {
+    // exportNameMap.set(val, key)
+    if (allExportMap.has(key)) {
+      allExportMap.set(key, [...allExportMap.get(key), val]);
+    } else {
+      allExportMap.set(key, toArray(val));
+    }
+  }
+
+  // 获取export声明变量
+  const exportNodes = typeChecker.getSymbolsInScope(sourceFile, SymbolFlags.ExportValue);
+  exportNodes.forEach((node) => {
+    addExportMap(sourceFilePath, node.getName());
+  });
+
+  // 获取所有ExportDeclaration类型的节点
+  const exports = sourceFile.getDescendantsOfKind(SyntaxKind.ExportDeclaration);
+
+  exports.forEach((exportNode) => {
+    const namedExports = exportNode.getNamedExports();
+    const namespaceExport = exportNode.getNamespaceExport();
+    if (isHasArray(namedExports)) {
+      addExportMap(
+        sourceFilePath,
+        namedExports.map((node) => node.getName())
+      );
+    } else if (namespaceExport) {
+      addExportMap(sourceFilePath, namespaceExport.getName());
+    } else {
+      const exportRelatedPath = exportNode.getModuleSpecifier()?.getText().replace(/['"]/g, "");
+      const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+      if (resolvedPath) {
+        allExportMap = mergeMaps(allExportMap, getAllExportNode(resolvedPath));
+      }
     }
   });
 
-  return exports;
+  exportFileMap.set(sourceFilePath, allExportMap);
+  return allExportMap;
+}
+
+function main() {
+  const CORE_ENTER_PATH = path.resolve(ROOT_PATH, "packages/core/src/index.ts");
+  const CORE_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/core/lib/tsSnippets.json");
+
+  const DOM_ENTER_PATH = path.resolve(ROOT_PATH, "packages/dom/src/index.ts");
+  const DOM_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/dom/lib/tsSnippets.json");
+
+  fs.writeFileSync(
+    CORE_OUTPUT_PATH,
+    JSON.stringify(
+      [...getAllExportNode(CORE_ENTER_PATH)]
+        .map(([filePath, exportsVar]) =>
+          exportsVar.map((exportName) => getExportSources(filePath, exportName))
+        )
+        .flat(),
+      null,
+      2
+    )
+  );
+
+  fs.writeFileSync(
+    DOM_OUTPUT_PATH,
+    JSON.stringify(
+      [...getAllExportNode(DOM_ENTER_PATH)]
+        .map(([filePath, exportsVar]) =>
+          exportsVar.map((exportName) => getExportSources(filePath, exportName))
+        )
+        .flat(),
+      null,
+      2
+    )
+  );
 }
 
 const dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT_PATH = path.resolve(dirname, "..");
 
-const CORE_ENTER_PATH = path.resolve(ROOT_PATH, "packages/core/src/index.ts");
-const CORE_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/core/lib/tsSnippets.json");
-
-const DOM_ENTER_PATH = path.resolve(ROOT_PATH, "packages/dom/src/index.ts");
-const DOM_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/dom/lib/tsSnippets.json");
-
-fs.writeFileSync(CORE_OUTPUT_PATH, JSON.stringify(getIntegratedCode(CORE_ENTER_PATH), null, 2));
-fs.writeFileSync(DOM_OUTPUT_PATH, JSON.stringify(getIntegratedCode(DOM_ENTER_PATH), null, 2));
+main();
