@@ -1,4 +1,4 @@
-name: publish package
+name: 发布前检查包版本是否更新
 
 on:
   workflow_dispatch:
@@ -72,7 +72,6 @@ jobs:
 
           dom_current_version=${{ steps.get-current-version.outputs.dom_current_version }}
           dom_latest_version=${{ steps.get-npm-version.outputs.dom_latest_version }}
-
 
           if [ "$core_current_version" != "$core_latest_version" ]; then
             echo "${{ env.npm_org }}/core Version has changed. Triggering the build."
