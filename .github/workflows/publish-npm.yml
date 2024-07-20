@@ -39,6 +39,14 @@ jobs:
           echo "dom_current_version=$dom_current_version" >> $GITHUB_OUTPUT
           echo "dom_current_version=$dom_current_version"
 
+          vue2_current_version=$(cat packages/vue2/package.json | jq -r .version)
+          echo "vue2_current_version=$vue2_current_version" >> $GITHUB_OUTPUT
+          echo "vue2_current_version=$vue2_current_version"
+
+          vue3_current_version=$(cat packages/vue3/package.json | jq -r .version)
+          echo "vue3_current_version=$vue3_current_version" >> $GITHUB_OUTPUT
+          echo "vue3_current_version=$vue3_current_version"
+
       - name: Get npm latest version
         id: get-npm-version
         run: |
