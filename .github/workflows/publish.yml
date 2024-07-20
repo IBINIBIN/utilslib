@@ -92,7 +92,7 @@ jobs:
         if: steps.compare-version.outputs.trigger_build == 'true'
         run: |
           # 在这里执行构建和测试操作
-          echo "Building and testing..."
+          echo "Building"
 
   trigger-another-workflow:
     runs-on: ubuntu-latest
