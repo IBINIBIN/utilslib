@@ -7,17 +7,14 @@ import fetch from "node-fetch";
  * @returns
  */
 export const createSandboxLink = async (body) => {
-  const fetchJson = await fetch(
-    "https://codesandbox.io/api/v1/sandboxes/define?json=1",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
+  const fetchJson = await fetch("https://codesandbox.io/api/v1/sandboxes/define?json=1", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(body),
+  });
 
   const codesandBoxInfo = await fetchJson.json();
   const { sandbox_id } = codesandBoxInfo;

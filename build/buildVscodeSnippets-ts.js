@@ -1,8 +1,10 @@
 import fs from "node:fs";
-import path from "node:path";
+import path, { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Project, SyntaxKind, Node, SymbolFlags } from "ts-morph";
+
+// #region ====================== 公共方法 ======================
 
 /**
  * 检查指定目标是否在选项中（选项可以是单个对象或对象数组）。
@@ -39,6 +41,18 @@ function toArray(value) {
   }
   return list;
 }
+
+/**
+ * 检查一个值是否为非空数组。
+ *
+ * @param {unknown} value - 要检查的值。
+ * @returns {value is any[]} 如果值为非空数组，则返回 true，否则返回 false。
+ */
+function isHasArray(value) {
+  return Array.isArray(value) && value.length > 0;
+}
+
+// #endregion -- end
 
 function getExternalVariables(code) {
   const project = new Project();
@@ -192,12 +206,6 @@ function getExternalVariables(code) {
   return l;
 }
 
-function getCodeSourceNode(code) {
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
-  return sourceFile;
-}
-
 let lastExternals = "";
 
 /**
@@ -314,12 +322,12 @@ function getExportSources(filePath, exportName) {
  */
 function resolveImportPath(importPath, baseDir) {
   if (importPath.startsWith(".")) {
-    return path.resolve(baseDir, importPath) + ".ts";
+    return resolve(baseDir, importPath) + ".ts";
   }
   // 如果是monorepo中的包路径
   const [scope, packageName] = importPath.split("/");
   if (scope.startsWith("@")) {
-    const packagePath = path.resolve(ROOT_PATH, "packages", packageName, "src", "index.ts");
+    const packagePath = resolve(ROOT_PATH, "packages", packageName, "src", "index.ts");
     return packagePath;
   }
 }
@@ -335,16 +343,6 @@ function readFileContent(filePath) {
     return fs.readFileSync(filePath, "utf-8");
   }
   throw new Error(`File not found: ${filePath}`);
-}
-
-/**
- * 检查一个值是否为非空数组。
- *
- * @param {unknown} value - 要检查的值。
- * @returns {value is any[]} 如果值为非空数组，则返回 true，否则返回 false。
- */
-function isHasArray(value) {
-  return Array.isArray(value) && value.length > 0;
 }
 
 function mergeMaps(map1, map2) {
@@ -404,9 +402,7 @@ function getAllExportNode(sourceFilePath) {
   const typeChecker = project.getTypeChecker();
 
   let allExportMap = new Map();
-  // let exportNameMap = new Map()
   function addExportMap(key, val) {
-    // exportNameMap.set(val, key)
     if (allExportMap.has(key)) {
       allExportMap.set(key, [...allExportMap.get(key), val]);
     } else {
@@ -447,40 +443,28 @@ function getAllExportNode(sourceFilePath) {
 }
 
 function main() {
-  const CORE_ENTER_PATH = path.resolve(ROOT_PATH, "packages/core/src/index.ts");
-  const CORE_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/core/lib/tsSnippets.json");
+  const PACKAGES_PATH = resolve(ROOT_PATH, "packages");
+  const packageNames = fs.readdirSync(PACKAGES_PATH);
 
-  const DOM_ENTER_PATH = path.resolve(ROOT_PATH, "packages/dom/src/index.ts");
-  const DOM_OUTPUT_PATH = path.resolve(ROOT_PATH, "packages/dom/lib/tsSnippets.json");
-
-  fs.writeFileSync(
-    CORE_OUTPUT_PATH,
-    JSON.stringify(
-      [...getAllExportNode(CORE_ENTER_PATH)]
-        .map(([filePath, exportsVar]) =>
-          exportsVar.map((exportName) => getExportSources(filePath, exportName))
-        )
-        .flat(),
-      null,
-      2
-    )
-  );
-
-  fs.writeFileSync(
-    DOM_OUTPUT_PATH,
-    JSON.stringify(
-      [...getAllExportNode(DOM_ENTER_PATH)]
-        .map(([filePath, exportsVar]) =>
-          exportsVar.map((exportName) => getExportSources(filePath, exportName))
-        )
-        .flat(),
-      null,
-      2
-    )
-  );
+  for (const packageName of packageNames) {
+    const ENTER_PATH = resolve(PACKAGES_PATH, packageName, "src/index.ts");
+    const OUTPUT_PATH = resolve(PACKAGES_PATH, packageName, "lib/tsSnippets.json");
+    fs.writeFileSync(
+      OUTPUT_PATH,
+      JSON.stringify(
+        [...getAllExportNode(ENTER_PATH)]
+          .map(([filePath, exportsVar]) =>
+            exportsVar.map((exportName) => getExportSources(filePath, exportName))
+          )
+          .flat(),
+        null,
+        2
+      )
+    );
+  }
 }
 
 const dirname = fileURLToPath(new URL(".", import.meta.url));
-const ROOT_PATH = path.resolve(dirname, "..");
+const ROOT_PATH = resolve(dirname, "..");
 
 main();

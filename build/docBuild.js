@@ -1,18 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
 
-import {
-  Application,
-  MinimalSourceFile,
-  Converter,
-  Renderer,
-  RendererEvent,
-  PageEvent,
-  ParameterType,
-  Comment,
-  CommentTag,
-  ReflectionKind,
-} from "typedoc";
+import { Application, Converter, PageEvent, CommentTag, ReflectionKind } from "typedoc";
 import cheerio from "cheerio";
 import { v4 as uuid } from "uuid";
 
@@ -36,7 +25,7 @@ async function fetchCsbLinkHandler() {
       }
 
       const csbConfig = {
-        files:fileContents,
+        files: fileContents,
       };
 
       csbLinkMap.set(demoName, await createSandboxLink(csbConfig));
@@ -48,7 +37,7 @@ async function main() {
   const app = await Application.bootstrapWithPlugins({
     ...typedocConfig,
     readme: "README_DOC.md",
-    entryPoints: ["packages/core", "packages/dom"],
+    entryPoints: ["packages/*"],
     plugin: ["typedoc-plugin-mdn-links"],
   });
 
@@ -75,7 +64,7 @@ async function main() {
     } catch (error) {}
   });
 
-  /** 为所有导出的方法添加 @category 注释标签. 
+  /** 为所有导出的方法添加 @category 注释标签.
    * 根据文件名设置category
    */
   app.converter.on(Converter.EVENT_CREATE_DECLARATION, (ctx, decRef) => {
@@ -83,9 +72,7 @@ async function main() {
       let categoryName = path.parse(decRef.sources[0].fullFileName).name;
       categoryName = categoryName === "index" ? "所有方法" : categoryName;
 
-      const categoryTag = new CommentTag("@category", [
-        { kind: "text", text: categoryName },
-      ]);
+      const categoryTag = new CommentTag("@category", [{ kind: "text", text: categoryName }]);
       decRef.comment?.blockTags?.push(categoryTag);
     }
   });
@@ -102,16 +89,11 @@ async function main() {
         const currentItem = $(element);
         const text = currentItem.html();
 
-        const [_, name] =
-          text.match(new RegExp(`^${CodesandboxIdPrefix}(.*)$`)) || [];
+        const [_, name] = text.match(new RegExp(`^${CodesandboxIdPrefix}(.*)$`)) || [];
         if (name) {
           const link = csbLinkMap.get(name);
           if (link) {
-            currentItem.html(
-              generateSandboxIframe(
-                `${link}?view=split`
-              )
-            );
+            currentItem.html(generateSandboxIframe(`${link}?view=split`));
           }
         }
       });

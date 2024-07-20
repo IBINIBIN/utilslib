@@ -1,4 +1,4 @@
-name: publish npm
+name: 发布npm包
 
 on:
   workflow_dispatch:
@@ -13,6 +13,8 @@ jobs:
     outputs:
       corePublish: ${{ steps.compare-version.outputs.corePublish }}
       domPublish: ${{ steps.compare-version.outputs.domPublish }}
+      vue2Publish: ${{ steps.compare-version.outputs.vue2Publish }}
+      vue3Publish: ${{ steps.compare-version.outputs.vue3Publish }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -59,6 +61,24 @@ jobs:
           echo "dom_latest_version=$dom_latest_version" >> $GITHUB_OUTPUT
           echo "dom_latest_version=$dom_latest_version"
 
+          if vue2_latest_version=$(npm view ${{ env.npm_org }}/vue2 version 2>/dev/null); then
+            echo "get core Package version: $vue2_latest_version"
+          else
+            echo "Failed to get vue2 package version, setting to -1"
+            vue2_latest_version="-1"
+          fi
+          echo "vue2_latest_version=$vue2_latest_version" >> $GITHUB_OUTPUT
+          echo "vue2_latest_version=$vue2_latest_version"
+
+          if vue3_latest_version=$(npm view ${{ env.npm_org }}/vue3 version 2>/dev/null); then
+            echo "get core Package version: $vue3_latest_version"
+          else
+            echo "Failed to get vue3 package version, setting to -1"
+            vue3_latest_version="-1"
+          fi
+          echo "vue3_latest_version=$vue3_latest_version" >> $GITHUB_OUTPUT
+          echo "vue3_latest_version=$vue3_latest_version"
+
       - name: Compare versions
         id: compare-version
         run: |
@@ -67,6 +87,12 @@ jobs:
 
           dom_current_version=${{ steps.get-current-version.outputs.dom_current_version }}
           dom_latest_version=${{ steps.get-npm-version.outputs.dom_latest_version }}
+
+          vue2_current_version=${{ steps.get-current-version.outputs.vue2_current_version }}
+          vue2_latest_version=${{ steps.get-npm-version.outputs.vue2_latest_version }}
+
+          vue3_current_version=${{ steps.get-current-version.outputs.vue3_current_version }}
+          vue3_latest_version=${{ steps.get-npm-version.outputs.vue3_latest_version }}
 
           if [ "$core_current_version" != "$core_latest_version" ]; then
             echo "${{ env.npm_org }}/core Version has changed. Triggering the build."
@@ -82,6 +108,20 @@ jobs:
             echo "dom version has not changed. Skipping the build."
           fi
 
+          if [ "$vue2_current_version" != "$vue2_latest_version" ]; then
+            echo "${{ env.npm_org }}/dom Version has changed. Triggering the build."
+            echo "vue2Publish=1" >> $GITHUB_OUTPUT
+          else
+            echo "vue2 version has not changed. Skipping the build."
+          fi
+
+          if [ "$vue3_current_version" != "$vue3_latest_version" ]; then
+            echo "${{ env.npm_org }}/dom Version has changed. Triggering the build."
+            echo "vue3Publish=1" >> $GITHUB_OUTPUT
+          else
+            echo "vue3 version has not changed. Skipping the build."
+          fi
+
       - name: Build and test
         if: steps.compare-version.outputs.trigger_build == 'true'
         run: |
@@ -91,7 +131,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: checkPackageVersion
-    if: needs.checkPackageVersion.outputs.corePublish == 1 || needs.checkPackageVersion.outputs.domPublish == 1
+    if: needs.checkPackageVersion.outputs.corePublish == 1 || needs.checkPackageVersion.outputs.domPublish == 1 || needs.checkPackageVersion.outputs.vue2Publish == 1 || needs.checkPackageVersion.outputs.vue3Publish == 1
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -120,6 +160,16 @@ jobs:
         id: dom_publish
         if: needs.checkPackageVersion.outputs.domPublish == 1
         run: pnpm --filter ${{ env.npm_org }}/dom  publish --no-git-checks --access public
+
+      - name: Deploy vue2 to npm
+        id: vue2_publish
+        if: needs.checkPackageVersion.outputs.vue2Publish == 1
+        run: pnpm --filter ${{ env.npm_org }}/vue2  publish --no-git-checks --access public
+
+      - name: Deploy vue3 to npm
+        id: vue3_publish
+        if: needs.checkPackageVersion.outputs.vue3Publish == 1
+        run: pnpm --filter ${{ env.npm_org }}/vue3  publish --no-git-checks --access public
 
   trigger:
     runs-on: ubuntu-latest
