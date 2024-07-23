@@ -125,3 +125,45 @@ export function filterList<T, R extends keyof T, U = T extends OnlyObject ? R : 
     return true;
   });
 }
+
+/**
+ * 从数组中排除指定的索引或索引范围，返回一个新的数组。
+ *
+ * @type {<T>(arr: T[], range: number | [number, number]) => T[]}
+ * @param {T[]} arr - 要处理的数组。
+ * @param {number | [number, number]} range - 要排除的单个索引或索引范围数组。
+ * @returns {T[]} 排除指定索引或索引范围内元素后的新数组。
+ * @template T - 数组元素类型。
+ * @example
+ * omitRange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [2, 4]) // [1, 2, 6, 7, 8, 9, 10]
+ * @example
+ * omitRange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2) // [1, 2, 4, 5, 6, 7, 8, 9, 10]
+ * @example
+ * omitRange(['a', 'b', 'c', 'd', 'e'], [1, 3]) // ['a', 'e']
+ */
+export function omitRange<T>(arr: T[], range: number | [number, number]): T[] {
+  let _range = typeof range === "number" ? [range, range] : range;
+  const [start, end] = _range;
+  return arr.filter((_, index) => index < start || index > end);
+}
+
+/**
+ * 从数组中选取指定的索引或索引范围并返回新的数组。
+ *
+ * @type {<T>(arr: T[], range: number | [number, number]) => T[]}
+ * @param {T[]} arr - 要选取元素的数组。
+ * @param {number | [number, number]} range - 要选取的单个索引或索引范围数组。
+ * @returns {T[]} 选取指定索引或索引范围内元素后的新数组。
+ * @template T - 数组元素类型。
+ * @example
+ * pickRange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [2, 4]) // [3, 4, 5]
+ * @example
+ * pickRange([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2) // [3]
+ * @example
+ * pickRange(['a', 'b', 'c', 'd', 'e'], [1, 3]) // ['b', 'c', 'd']
+ */
+export function pickRange<T>(arr: T[], range: number | [number, number]): T[] {
+  let _range = typeof range === "number" ? [range, range] : range;
+  const [start, end] = _range;
+  return arr.filter((_, index) => index >= start && index <= end);
+}
