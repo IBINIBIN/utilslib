@@ -3,7 +3,7 @@
  */
 import raf from "raf";
 import { easeInOutCubic, EasingFunction } from "./easing";
-import { isFunction, isString, toArray, NOOP } from "@utilslib/core";
+import { isFunction, isString, toArray, noop } from "@utilslib/core";
 
 type CSSSelector = string;
 
@@ -42,19 +42,19 @@ type EEventHandler<E extends Node, K extends keyof EEventMap<E>> = (
  *   event: K,
  *   handler: EEventHandler<E, K>,
  *   options?: boolean | AddEventListenerOptions
- * ) => typeof NOOP}
+ * ) => typeof noop}
  * @param {E} element - 要添加事件监听器的元素。
  * @param {K} event - 要监听的事件类型。
  * @param {EEventHandler<E, K>} handler - 事件处理函数。
  * @param {boolean | AddEventListenerOptions} [options] - 可选的事件参数。
- * @returns {typeof NOOP} 一个函数，用于移除事件监听器。
+ * @returns {typeof noop} 一个函数，用于移除事件监听器。
  */
 export function on<E extends Node, K extends keyof EEventMap<E>>(
   element: E,
   event: K,
   handler: EEventHandler<E, K>,
   options?: boolean | AddEventListenerOptions
-): typeof NOOP {
+): typeof noop {
   if (element && event && handler) {
     element.addEventListener(
       event as string,
@@ -69,7 +69,7 @@ export function on<E extends Node, K extends keyof EEventMap<E>>(
       );
     };
   }
-  return NOOP;
+  return noop;
 }
 
 /**
@@ -79,19 +79,19 @@ export function on<E extends Node, K extends keyof EEventMap<E>>(
  *   event: K,
  *   handler: EEventHandler<E, K>,
  *   options?: boolean | AddEventListenerOptions
- * ) => typeof NOOP}
+ * ) => typeof noop}
  * @param {E} element - 要添加事件监听器的元素。
  * @param {K} event - 要监听的事件类型。
  * @param {EEventHandler<E, K>} handler - 事件处理函数。
  * @param {boolean | AddEventListenerOptions} [options] - 可选的事件参数。
- * @returns {typeof NOOP} 一个函数，用于移除事件监听器。
+ * @returns {typeof noop} 一个函数，用于移除事件监听器。
  */
 export function once<E extends Node, K extends keyof EEventMap<E>>(
   element: E,
   event: K,
   handler: EEventHandler<E, K>,
   options?: boolean | AddEventListenerOptions
-): typeof NOOP {
+): typeof noop {
   const callback: EEventHandler<E, K> = function (e) {
     handler.call(this, e);
     off(element, event, callback, options);
@@ -401,8 +401,7 @@ export function clickOutInWebComponent({
   cb: () => void;
   root: Node;
   [key: string]: any;
-}): typeof NOOP {
-  // let doc, root;
+}): typeof noop {
   on(root, "click", (event) => {
     const _els = toArray(els).filter(Boolean);
     const protect = _els.some((item) => containerDom(item?.() ?? item, event.target));
@@ -579,7 +578,7 @@ export function getScrollbarWidth() {
 export function observeNodeSizeChange(
   targetNode: Element,
   callback: (rect: DOMRectReadOnly, entry: ResizeObserverEntry) => unknown
-): typeof NOOP {
+): typeof noop {
   // 创建一个ResizeObserver实例并将回调函数传入
   const resizeObserver = new ResizeObserver(([entry]) => {
     callback(entry.contentRect, entry);

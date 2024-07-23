@@ -1,4 +1,4 @@
-export const NOOP = () => {};
+export const noop = () => {};
 
 /**
  * 确保传入的方法只能被执行一次
