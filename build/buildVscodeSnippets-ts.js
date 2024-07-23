@@ -52,8 +52,53 @@ function isHasArray(value) {
   return Array.isArray(value) && value.length > 0;
 }
 
+/**
+ * 生成指定长度的随机字符串。
+ *
+ * @param {number} length - 随机字符串的长度。默认值为 8。
+ * @returns {string} 生成的随机字符串。
+ * @example
+ * ```ts
+ * createRandomString(8) // => "aBcDeFgH"
+ */
+function createRandomString(length = 8) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let randomString = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    randomString += characters[randomIndex];
+  }
+  return randomString;
+}
+
+/**
+ * 获取两个数组的交集，通过指定字段属性进行判断。
+ *
+ * @type  {<T, K extends keyof T>(arr1: T[], arr2: T[], key: K) => T[]}
+ * @param {T[]} arr1 - 第一个数组。「主数组,当返回的内容从主数组中获取」
+ * @param {T[]} arr2 - 第二个数组。
+ * @param {K extends keyof T} [key] - 可选的字段属性，用于判断交集。
+ * @returns {T[]} 交集的数组。
+ */
+function getArrayIntersection(arr1, arr2, key) {
+  if (key) {
+    const set = new Set(arr2.map((item) => item[key]));
+    return arr1.filter((item) => set.has(item[key]));
+  }
+  return arr1.filter((item) => arr2.includes(item));
+}
+
 // #endregion -- end
 
+function getImportClauseNameList(importDecl) {
+  return (
+    importDecl
+      .getImportClause()
+      ?.getNamedBindings()
+      ?.getElements()
+      ?.map((item) => item.getText()) ?? []
+  );
+}
 function getExternalVariables(code) {
   const project = new Project();
   const sourceFile = project.createSourceFile("temp.ts", code);
@@ -171,7 +216,12 @@ function getExternalVariables(code) {
     const parent = node.getParent();
 
     // 排除链式调用中的标识符
-    if (isTargetInOptions(parent.getKind(), [SyntaxKind.PropertyAccessExpression])) {
+    if (
+      isTargetInOptions(parent.getKind(), [
+        SyntaxKind.PropertyAccessExpression,
+        SyntaxKind.MethodDeclaration,
+      ])
+    ) {
       return;
     }
 
@@ -206,7 +256,7 @@ function getExternalVariables(code) {
   return l;
 }
 
-let lastExternals = "";
+let lastExternals = [];
 
 /**
  * 获取外部变量的源代码
@@ -221,13 +271,22 @@ function getExternalVariableSources(filePath, externalVariables) {
   const project = new Project();
   const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
 
+  let noHandleVariableList = [];
+
   const externalSources = [];
 
   // 遍历外部变量数组
   for (const variable of externalVariables) {
+    if (isTargetInOptions(variable, noHandleVariableList)) continue;
+
     const identifierNodeMap = sourceFile
       .getDescendantsOfKind(SyntaxKind.Identifier)
-      .filter((node) => node.getText() === variable)
+      .filter((node) => {
+        return (
+          node.getText() === variable &&
+          !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression)
+        );
+      })
       .reduce((prev, cur) => {
         return {
           ...prev,
@@ -250,16 +309,27 @@ function getExternalVariableSources(filePath, externalVariables) {
             ?.getText()
             .replace(/['"]/g, "");
           const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
-          const exportsMap = getAllExportNode(resolvedPath);
 
-          let targetPath = "";
-          for (const [key, val] of exportsMap) {
-            const target = val.find((item) => item === declaration.getText());
-            if (target) {
-              targetPath = key;
+          // 处理外部模块
+          if (!resolvedPath) {
+            const importClauses = getImportClauseNameList(importDeclaration);
+            noHandleVariableList = [
+              ...noHandleVariableList,
+              ...getArrayIntersection(externalVariables, importClauses),
+            ];
+            text = importDeclaration.getFullText();
+          } else {
+            const exportsMap = getAllExportNode(resolvedPath);
+
+            let targetPath = "";
+            for (const [key, val] of exportsMap) {
+              const target = val.find((item) => item === declaration.getText());
+              if (target) {
+                targetPath = key;
+              }
             }
+            text = getExternalVariableSources(targetPath, [declaration.getText()]);
           }
-          text = getExternalVariableSources(targetPath, [declaration.getText()]);
         } else {
           text = declaration.getFullText();
         }
@@ -269,10 +339,14 @@ function getExternalVariableSources(filePath, externalVariables) {
     }
   }
 
-  let text = externalSources.join("\n");
+  let text = externalSources.join(`\n`);
   const externals = getExternalVariables(text);
-  if (externals.length && lastExternals !== JSON.stringify(externals)) {
-    lastExternals = JSON.stringify(externals);
+
+  if (
+    externals.length &&
+    getArrayIntersection(lastExternals, externals).length !== externals.length
+  ) {
+    lastExternals = [...externals];
     const newExternals = getExternalVariableSources(filePath, externals);
     externalSources.unshift(newExternals);
   }
