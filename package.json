@@ -18,6 +18,8 @@
     "deploy:test": "pnpm -r publish --dry-run --no-git-checks --access public",
     "core:patch": "npm -C packages/core version patch",
     "dom:patch": "npm -C packages/dom version patch",
+    "vue2:patch": "npm -C packages/vue2 version patch",
+    "vue3:patch": "npm -C packages/vue3 version patch",
     "core:minor": "npm -C packages/core version minor",
     "dom:minor": "npm -C packages/dom version minor",
     "core:major": "npm -C packages/core version major",
