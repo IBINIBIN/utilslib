@@ -369,13 +369,39 @@ function getExportSources(filePath, exportName) {
   let commentText = "";
   // 获取export声明变量
   sourceFile.forEachChild((node) => {
-    if (node.getName?.() === exportName) {
-      commentText = node
-        .getJsDocs()
-        .find((Jsdoc) => Jsdoc.getCommentText?.())
-        ?.getCommentText?.();
-    } else if (node.hasExportKeyword?.()) {
-      node.setIsExported(false);
+    switch (node.getKind()) {
+      case SyntaxKind.VariableStatement:
+        const declarations = node
+          .getFirstChildByKind(SyntaxKind.VariableDeclarationList)
+          .getDeclarations();
+        const same = declarations.some((item) => {
+          const name = item.getName();
+          return name === exportName;
+        });
+
+        if (same) {
+          commentText = node
+            .getJsDocs()
+            .find((Jsdoc) => Jsdoc.getCommentText?.())
+            ?.getCommentText?.();
+        } else {
+          node.setIsExported(false);
+        }
+
+        break;
+      case SyntaxKind.FunctionDeclaration:
+        if (node.getName?.() === exportName) {
+          commentText = node
+            .getJsDocs()
+            .find((Jsdoc) => Jsdoc.getCommentText?.())
+            ?.getCommentText?.();
+        } else if (node.hasExportKeyword?.()) {
+          node.setIsExported(false);
+        }
+        break;
+
+      default:
+        break;
     }
   });
 
