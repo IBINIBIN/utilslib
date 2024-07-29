@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path, { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { Project, SyntaxKind, Node, SymbolFlags } from "ts-morph";
+import { Project, SyntaxKind, SymbolFlags } from "ts-morph";
 
 // #region ====================== 公共方法 ======================
 
@@ -163,19 +163,9 @@ function getExternalVariables(code) {
   });
 
   function getExternal(node) {
-    const nodeKindName = node.getKindName();
-    const nodeText = node?.getText();
-
-    if (isTargetInOptions(node.getKind(), [SyntaxKind.FunctionDeclaration])) {
-    }
-
     let l = [];
 
     node.forEachChild((item) => {
-      const itemKindName = item.getKindName();
-      const itemText = item?.getText();
-      // aaa.push(itemText);
-
       l.push(getExternalVariablesByNode(item));
       l.push(...getExternal(item));
     });
@@ -184,15 +174,6 @@ function getExternalVariables(code) {
   }
 
   function validate(node, text) {
-    // if (
-    //   isTargetInOptions(node.getParent().getKind(), [
-    //     SyntaxKind.TypeReference,
-    //     SyntaxKind.TypeParameter,
-    //   ])
-    // ) {
-    //   return;
-    // }
-
     if (globalTypeNames.includes(text) || globalVarNames.has(text)) return;
 
     if (isTargetInOptions(node.getKind(), [SyntaxKind.TypeReference])) {
@@ -542,29 +523,104 @@ function getAllExportNode(sourceFilePath) {
   return allExportMap;
 }
 
-function main() {
-  const PACKAGES_PATH = resolve(ROOT_PATH, "packages");
-  const packageNames = fs.readdirSync(PACKAGES_PATH);
-
-  for (const packageName of packageNames) {
-    const ENTER_PATH = resolve(PACKAGES_PATH, packageName, "src/index.ts");
-    const OUTPUT_PATH = resolve(PACKAGES_PATH, packageName, "lib/tsSnippets.json");
-    fs.writeFileSync(
-      OUTPUT_PATH,
-      JSON.stringify(
-        [...getAllExportNode(ENTER_PATH)]
-          .map(([filePath, exportsVar]) =>
-            exportsVar.map((exportName) => getExportSources(filePath, exportName))
-          )
-          .flat(),
-        null,
-        2
-      )
-    );
-  }
-}
-
 const dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT_PATH = resolve(dirname, "..");
 
-main();
+/**
+ * 获取外部变量的源代码
+ *
+ * @param {string} filePath - 文件路径
+ * @param {string[]} externalVariables - 外部变量数组
+ * @returns {string} - 外部变量的源代码
+ */
+export function extractUsedCode(filePath, externalVariables) {
+  const baseDir = path.dirname(filePath);
+  const code = readFileContent(filePath);
+  const project = new Project();
+  const sourceFile = project.createSourceFile("__extractUsedCode.ts", code);
+
+  let noHandleVariableList = [];
+
+  const externalSources = [];
+
+  // 遍历外部变量数组
+  for (const variable of externalVariables) {
+    if (isTargetInOptions(variable, noHandleVariableList)) continue;
+
+    const identifierNodeMap = sourceFile
+      .getDescendantsOfKind(SyntaxKind.Identifier)
+      .filter((node) => {
+        return (
+          node.getText() === variable &&
+          !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression)
+        );
+      })
+      .reduce((prev, cur) => {
+        return {
+          ...prev,
+          [cur.getText()]: cur,
+        };
+      }, {});
+
+    for (const [key, identifierNode] of Object.entries(identifierNodeMap)) {
+      const declaration = identifierNode.getDefinitionNodes()[0];
+
+      if (declaration) {
+        let text = "";
+        const importDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
+        const varDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.VariableStatement);
+        if (varDeclaration) {
+          text = varDeclaration.getFullText();
+        } else if (importDeclaration) {
+          const exportRelatedPath = importDeclaration
+            .getModuleSpecifier()
+            ?.getText()
+            .replace(/['"]/g, "");
+          const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+
+          // 处理外部模块
+          if (!resolvedPath) {
+            const importClauses = getImportClauseNameList(importDeclaration);
+            noHandleVariableList = [
+              ...noHandleVariableList,
+              ...getArrayIntersection(externalVariables, importClauses),
+            ];
+            text = importDeclaration.getFullText();
+          } else {
+            const exportsMap = getAllExportNode(resolvedPath);
+
+            let targetPath = "";
+            for (const [key, val] of exportsMap) {
+              const target = val.find((item) => item === declaration.getText());
+              if (target) {
+                targetPath = key;
+              }
+            }
+            text = extractUsedCode(targetPath, [declaration.getText()]);
+          }
+        } else {
+          text = declaration.getFullText();
+        }
+        text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
+        externalSources.push(text);
+      }
+    }
+  }
+
+  let text = externalSources.join(`\n`);
+  const externals = getExternalVariables(text);
+
+  if (
+    externals.length &&
+    getArrayIntersection(lastExternals, externals).length !== externals.length
+  ) {
+    lastExternals = [...externals];
+    const newExternals = extractUsedCode(filePath, externals);
+    lastExternals = []
+    externalSources.unshift(newExternals);
+  }
+
+  return externalSources.join("\n\n");
+}
+
+export default extractUsedCode;

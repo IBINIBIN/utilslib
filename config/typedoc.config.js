@@ -8,6 +8,7 @@ export default {
   entryPoints: globSync("packages/*").map((item) => "../" + item),
   entryPointStrategy: "packages",
   hideGenerator: true,
+  // plugin: ["typedoc-plugin-markdown"],
   includeVersion: false,
   navigationLinks: {
     GitHub: "https://github.com/T-Tuan/utilslib",

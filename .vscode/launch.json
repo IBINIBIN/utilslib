@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "docBuild",
+      "program": "${workspaceFolder}/build/docBuild.js",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
       "name": "build",
       "request": "launch",
       "runtimeArgs": ["run-script", "build"],
@@ -13,8 +20,15 @@
       "type": "node"
     },
     {
+      "name": "buildVscodeSnippetsJson",
+      "program": "${workspaceFolder}/build/buildVscodeSnippetsJson.js",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
       "name": "getCssCodeList",
-      "program": "${workspaceFolder}/vscodeExtension/fe-integration/build/getCssCodeList.js",
+      "program": "${workspaceFolder}/build/getCssCodeList.js",
       "request": "launch",
       "skipFiles": ["<node_internals>/**"],
       "type": "node"
@@ -30,12 +44,8 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/vscodeExtension/fe-integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/vscodeExtension/fe-integration/out/**/*.js"
-      ],
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/vscodeExtension/fe-integration"],
+      "outFiles": ["${workspaceFolder}/vscodeExtension/fe-integration/out/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -46,9 +56,7 @@
         "--extensionDevelopmentPath=${workspaceFolder}/vscodeExtension/fe-integration",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
       ],
-      "outFiles": [
-        "${workspaceFolder}/vscodeExtension/fe-integration/out/test/**/*.js"
-      ],
+      "outFiles": ["${workspaceFolder}/vscodeExtension/fe-integration/out/test/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]
