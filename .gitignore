@@ -2,7 +2,13 @@ node_modules
 lib
 **/dist
 doc
-docs
+/docs
 out
 .vscode-test/
 *.vsix
+
+docsPress/docs/@utilslib
+docsPress/.vitepress/dist
+docsPress/.vitepress/cache
+docsPress/docs/.vitepress/cache
+docsPress/docs/.vitepress/dist

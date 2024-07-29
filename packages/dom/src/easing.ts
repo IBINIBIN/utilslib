@@ -9,7 +9,6 @@ export interface EasingFunction {
 }
 
 /**
- * @export
  * @param {number} current 当前时间
  * @param {number} start 开始值
  * @param {number} end 结束值
@@ -23,7 +22,6 @@ export const linear: EasingFunction = (current, start, end, duration) => {
 };
 
 /**
- * @export
  * @param {number} current 当前时间
  * @param {number} start 开始值
  * @param {number} end 结束值
