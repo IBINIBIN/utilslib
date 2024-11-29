@@ -8,7 +8,7 @@ import { URL } from "node:url";
 
 import { format } from "prettier";
 import { Application, Converter, PageEvent, CommentTag, ReflectionKind } from "typedoc";
-import cheerio, { text } from "cheerio";
+import cheerio from "cheerio";
 import { v4 as uuid } from "uuid";
 
 import { createSandboxLink, generateSandboxIframe } from "./docBuildLogic.js";
@@ -138,7 +138,7 @@ async function main() {
 }
 
 function getTypedocJson() {
-  const jsonPath = path.join(__dirname, "..", "docs", "index.json");
+  const jsonPath = path.join(__dirname, typedocConfig.out, "index.json");
   return JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
 }
 

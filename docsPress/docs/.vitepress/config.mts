@@ -7,7 +7,7 @@ export default defineConfig({
   title: "@utilslib",
   description: "A VitePress Site",
   lang: "zh",
-  base: '.',
+  base: '/vitepress',
   outDir: '../../docs/vitepress',
   vite: {},
   themeConfig: {
