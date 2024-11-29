@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
-    "build:doc": "node build/docBuild.js && npm -C docsPress run docs:build",
+    "build:doc": "node build/docBuild.js && concurrently 'npm -C docsPress run docs:build'",
     "build:doc-config": "typedoc --options config/typedoc.config.js",
     "build:buildVscodeSnippetsJson": "node build/buildVscodeSnippetsJson.js",
     "build:code": "cross-env NODE_ENV=production rollup -c",
@@ -34,7 +34,7 @@
     "rollup-plugin-clear": "^2.0.7",
     "rollup-plugin-dts": "^6.1.0",
     "rollup-plugin-esbuild": "^6.1.0",
-    "typedoc": "^0.26.5"
+    "typedoc": "^0.27.1"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.1",
@@ -49,6 +49,7 @@
     "acorn-walk": "^8.3.3",
     "cheerio": "1.0.0-rc.12",
     "codesandbox": "^2.2.3",
+    "concurrently": "^9.1.0",
     "eslint": "^9.10.0",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
@@ -57,9 +58,8 @@
     "rollup": "^4.1.4",
     "ts-morph": "^23.0.0",
     "tslib": "^2.6.2",
-    "typedoc-plugin-markdown": "^4.2.3",
     "typedoc-plugin-mdn-links": "^3.1.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.7.2",
     "uuid": "^9.0.1"
   }
 }
