@@ -336,12 +336,12 @@
         "link": "/@utilslib/dom/getScroll/index"
       },
       {
-        "text": "getScrollContainer",
-        "link": "/@utilslib/dom/getScrollContainer/index"
-      },
-      {
         "text": "getScrollbarWidth",
         "link": "/@utilslib/dom/getScrollbarWidth/index"
+      },
+      {
+        "text": "getScrollContainer",
+        "link": "/@utilslib/dom/getScrollContainer/index"
       },
       {
         "text": "getWindowScroll",

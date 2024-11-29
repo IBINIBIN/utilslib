@@ -1,5 +1,5 @@
-import path, { dirname, resolve } from "node:path";
-// import fs from "node:fs";
+import path, { resolve } from "node:path";
+
 /**
  * @type {import("fs-extra")}
  */
@@ -62,32 +62,6 @@ async function main() {
     ...typedocConfig,
     readme: "README_DOC.md",
     entryPoints: ["packages/*"],
-    // plugin: ["typedoc-plugin-mdn-links", "typedoc-plugin-markdown"],
-    plugin: ["typedoc-plugin-mdn-links"],
-    // hidePageTitle: true,
-    // hideBreadcrumbs: true,
-    // sanitizeComments: true,
-    // expandObjects: true,
-    // expandParameters: true,
-    // parametersFormat: "table",
-    // parametersFormat: "list",
-    // useHTMLEncodedBrackets: true,
-    // navigationModel: {
-    //   excludeGroups: true,
-    //   excludeCategories: true,
-    //   excludeFolders: true,
-    // },
-    // tableColumnSettings: {
-    //   hideDefaults: true,
-    //   hideInherited: true,
-    //   hideModifiers: true,
-    //   hideOverrides: true,
-    //   hideSources: true,
-    //   hideValues: true,
-    //   leftAlignHeaders: true,
-    // },
-    // hideGroupHeadings: true,
-    // useCodeBlocks: true,
   });
 
   /** 获取demo文件夹Path. 为后面生成codesandbox的iframe预览链接做铺垫 */
@@ -155,8 +129,8 @@ async function main() {
   await fetchCsbLinkHandler();
 
   if (project) {
-    const outputDir = path.join(__dirname, "..", "docs");
-    const outputJson = path.join(__dirname, "..", "docs", "index.json");
+    const outputDir = path.join(__dirname, typedocConfig.out);
+    const outputJson = path.join(outputDir, "index.json");
     await app.generateDocs(project, outputDir);
     await app.generateJson(project, outputJson);
     await handleTypedocJson();
