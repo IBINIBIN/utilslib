@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev:doc": "typedoc --options config/typedoc.config.js --watch packages/*",
-    "build:doc": "node build/docBuild.js && concurrently 'npm -C docsPress run docs:build'",
+    "build:doc": "node build/docBuild.js && npm -C docsPress run docs:build",
     "build:doc-config": "typedoc --options config/typedoc.config.js",
     "build:buildVscodeSnippetsJson": "node build/buildVscodeSnippetsJson.js",
     "build:code": "cross-env NODE_ENV=production rollup -c",
