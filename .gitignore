@@ -10,5 +10,6 @@ out
 docsPress/docs/@utilslib
 docsPress/.vitepress/dist
 docsPress/.vitepress/cache
+docsPress/docs/.vitepress/sidebar.json
 docsPress/docs/.vitepress/cache
 docsPress/docs/.vitepress/dist
