@@ -41,3 +41,77 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
 
   return pickedObject as Pick<T, K>;
 }
+
+/**
+ * 创建一个具有双向映射的枚举对象。
+ *
+ * @param {Object} enumObj - 原始枚举对象，包含键值对
+ * @returns {Object} 返回具有双向映射且冻结的枚举对象
+ *
+ * @throws {TypeError} 当枚举值类型不是 string 或 number 时抛出错误
+ */
+export function createEnum<T extends { [key: string]: string | number }>(
+  enumObj: T
+): Readonly<T & { [K in T[keyof T]]: keyof T }> {
+  const result = {} as T & { [K in T[keyof T]]: keyof T };
+
+  for (const key in enumObj) {
+    if (!Object.prototype.hasOwnProperty.call(enumObj, key)) continue;
+    const value = enumObj[key];
+    if (typeof value !== "string" && typeof value !== "number") {
+      throw new TypeError(`Enum value must be string or number, got ${typeof value}`);
+    }
+    result[key] = value;
+    Object.defineProperty(result, value, {
+      value: key,
+      enumerable: false,
+      writable: false,
+      configurable: false,
+    });
+  }
+  return Object.freeze(result);
+}
+
+/**
+ * 创建一个带有描述信息的双向映射枚举对象。
+ * 此函数扩展了基本的枚举功能，为每个枚举值添加描述信息，并提供获取描述的方法。
+ *
+ * @param {Object} enumObj - 包含枚举定义的对象，每个属性都应该是一个包含 value 和 description 的对象
+ * @returns {Readonly<Object>} 返回一个只读的枚举对象，包含：
+ *   - 正向映射（键到值）
+ *   - 反向映射（值到键）
+ *   - getDescription 方法用于获取描述信息
+ */
+export function createEnumWithDescription<
+  T extends {
+    [key: string]: {
+      value: string | number;
+      description: string;
+    };
+  },
+>(
+  enumObj: T
+): Readonly<
+  { [K in keyof T]: T[K]["value"] } & { [K in T[keyof T]["value"]]: keyof T } & {
+    getDescription(key: keyof T): string;
+  }
+> {
+  const [simpleEnum, descriptions] = Object.entries(enumObj).reduce(
+    ([values, descs], [key, { value, description }]) => {
+      return [((values[key] = value), values), descs.set(value, description)];
+    },
+    [{} as { [key: string]: string | number }, new Map<string | number, string>()]
+  );
+
+  const result = createEnum(simpleEnum) as any;
+  Object.defineProperty(result, "getDescription", {
+    value(key: keyof T) {
+      return descriptions.get(result[key]);
+    },
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+
+  return Object.freeze(result);
+}
