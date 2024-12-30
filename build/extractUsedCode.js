@@ -131,6 +131,10 @@ function getExternalVariables(code) {
     const kindName = node.getKindName();
 
     switch (node.getKind()) {
+      case SyntaxKind.MethodSignature:
+        declaredIdentifiers.add(node.getName());
+        break;
+
       case SyntaxKind.PropertyAssignment:
         declaredIdentifiers.add(text);
         break;
@@ -616,7 +620,7 @@ export function extractUsedCode(filePath, externalVariables) {
   ) {
     lastExternals = [...externals];
     const newExternals = extractUsedCode(filePath, externals);
-    lastExternals = []
+    lastExternals = [];
     externalSources.unshift(newExternals);
   }
 
