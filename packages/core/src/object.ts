@@ -53,7 +53,7 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
 export function createEnum<T extends { [key: string]: string | number }>(
   enumObj: T
 ): Readonly<T & { [K in T[keyof T]]: keyof T }> {
-  const result = {} as T & { [K in T[keyof T]]: keyof T };
+  const result = Object.create({}) as T & { [K in T[keyof T]]: keyof T };
 
   for (const key in enumObj) {
     if (!Object.prototype.hasOwnProperty.call(enumObj, key)) continue;
@@ -62,13 +62,14 @@ export function createEnum<T extends { [key: string]: string | number }>(
       throw new TypeError(`Enum value must be string or number, got ${typeof value}`);
     }
     result[key] = value;
-    Object.defineProperty(result, value, {
+    Object.defineProperty(Object.getPrototypeOf(result), value, {
       value: key,
       enumerable: false,
       writable: false,
       configurable: false,
     });
   }
+
   return Object.freeze(result);
 }
 
@@ -104,7 +105,7 @@ export function createEnumWithDescription<
   );
 
   const result = createEnum(simpleEnum) as any;
-  Object.defineProperty(result, "getDescription", {
+  Object.defineProperty(Object.getPrototypeOf(result), "getDescription", {
     value(key: keyof T) {
       return descriptions.get(result[key]);
     },
