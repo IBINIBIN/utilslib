@@ -99,7 +99,7 @@ export function createEnumWithDescription<
 > {
   const [simpleEnum, descriptions] = Object.entries(enumObj).reduce(
     ([values, descs], [key, { value, description }]) => {
-      return [((values[key] = value), values), descs.set(value, description)];
+      return [((values[key] = value), values), descs.set(key, description).set(value, description)];
     },
     [{} as { [key: string]: string | number }, new Map<string | number, string>()]
   );
