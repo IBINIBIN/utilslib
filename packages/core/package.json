@@ -30,6 +30,7 @@
     "url": "https://github.com/T-Tuan/utilslib.git/issues"
   },
   "dependencies": {
+    "@utilslib/types": "workspace:^",
     "lodash": "^4.17.21"
   }
 }

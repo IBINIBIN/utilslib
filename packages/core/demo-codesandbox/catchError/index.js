@@ -1,4 +1,4 @@
-const { catchError } = _utilslibCore
+const { catchError } = _utilslibCore;
 
 // 示例1：正常的异步函数
 const asyncFunc = async () => {

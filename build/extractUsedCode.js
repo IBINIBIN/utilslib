@@ -103,9 +103,7 @@ function getExternalVariables(code) {
   const project = new Project();
   const sourceFile = project.createSourceFile("temp.ts", code);
 
-  const globalVarSymbols = project
-    .getTypeChecker()
-    .getSymbolsInScope(sourceFile, SymbolFlags.Value);
+  const globalVarSymbols = project.getTypeChecker().getSymbolsInScope(sourceFile, SymbolFlags.Value);
 
   // 将全局变量名称提取出来
   const globalVarNames = new Set(globalVarSymbols.map((symbol) => symbol.getName()));
@@ -201,12 +199,7 @@ function getExternalVariables(code) {
     const parent = node.getParent();
 
     // 排除链式调用中的标识符
-    if (
-      isTargetInOptions(parent.getKind(), [
-        SyntaxKind.PropertyAccessExpression,
-        SyntaxKind.MethodDeclaration,
-      ])
-    ) {
+    if (isTargetInOptions(parent.getKind(), [SyntaxKind.PropertyAccessExpression, SyntaxKind.MethodDeclaration])) {
       return;
     }
 
@@ -267,10 +260,7 @@ function getExternalVariableSources(filePath, externalVariables) {
     const identifierNodeMap = sourceFile
       .getDescendantsOfKind(SyntaxKind.Identifier)
       .filter((node) => {
-        return (
-          node.getText() === variable &&
-          !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression)
-        );
+        return node.getText() === variable && !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression);
       })
       .reduce((prev, cur) => {
         return {
@@ -289,19 +279,13 @@ function getExternalVariableSources(filePath, externalVariables) {
         if (varDeclaration) {
           text = varDeclaration.getFullText();
         } else if (importDeclaration) {
-          const exportRelatedPath = importDeclaration
-            .getModuleSpecifier()
-            ?.getText()
-            .replace(/['"]/g, "");
+          const exportRelatedPath = importDeclaration.getModuleSpecifier()?.getText().replace(/['"]/g, "");
           const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
 
           // 处理外部模块
           if (!resolvedPath) {
             const importClauses = getImportClauseNameList(importDeclaration);
-            noHandleVariableList = [
-              ...noHandleVariableList,
-              ...getArrayIntersection(externalVariables, importClauses),
-            ];
+            noHandleVariableList = [...noHandleVariableList, ...getArrayIntersection(externalVariables, importClauses)];
             text = importDeclaration.getFullText();
           } else {
             const exportsMap = getAllExportNode(resolvedPath);
@@ -327,10 +311,7 @@ function getExternalVariableSources(filePath, externalVariables) {
   let text = externalSources.join(`\n`);
   const externals = getExternalVariables(text);
 
-  if (
-    externals.length &&
-    getArrayIntersection(lastExternals, externals).length !== externals.length
-  ) {
+  if (externals.length && getArrayIntersection(lastExternals, externals).length !== externals.length) {
     lastExternals = [...externals];
     const newExternals = getExternalVariableSources(filePath, externals);
     externalSources.unshift(newExternals);
@@ -356,9 +337,7 @@ function getExportSources(filePath, exportName) {
   sourceFile.forEachChild((node) => {
     switch (node.getKind()) {
       case SyntaxKind.VariableStatement:
-        const declarations = node
-          .getFirstChildByKind(SyntaxKind.VariableDeclarationList)
-          .getDeclarations();
+        const declarations = node.getFirstChildByKind(SyntaxKind.VariableDeclarationList).getDeclarations();
         const same = declarations.some((item) => {
           const name = item.getName();
           return name === exportName;
@@ -510,7 +489,7 @@ function getAllExportNode(sourceFilePath) {
     if (isHasArray(namedExports)) {
       addExportMap(
         sourceFilePath,
-        namedExports.map((node) => node.getName())
+        namedExports.map((node) => node.getName()),
       );
     } else if (namespaceExport) {
       addExportMap(sourceFilePath, namespaceExport.getName());
@@ -554,10 +533,7 @@ export function extractUsedCode(filePath, externalVariables) {
     const identifierNodeMap = sourceFile
       .getDescendantsOfKind(SyntaxKind.Identifier)
       .filter((node) => {
-        return (
-          node.getText() === variable &&
-          !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression)
-        );
+        return node.getText() === variable && !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression);
       })
       .reduce((prev, cur) => {
         return {
@@ -576,19 +552,13 @@ export function extractUsedCode(filePath, externalVariables) {
         if (varDeclaration) {
           text = varDeclaration.getFullText();
         } else if (importDeclaration) {
-          const exportRelatedPath = importDeclaration
-            .getModuleSpecifier()
-            ?.getText()
-            .replace(/['"]/g, "");
+          const exportRelatedPath = importDeclaration.getModuleSpecifier()?.getText().replace(/['"]/g, "");
           const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
 
           // 处理外部模块
           if (!resolvedPath) {
             const importClauses = getImportClauseNameList(importDeclaration);
-            noHandleVariableList = [
-              ...noHandleVariableList,
-              ...getArrayIntersection(externalVariables, importClauses),
-            ];
+            noHandleVariableList = [...noHandleVariableList, ...getArrayIntersection(externalVariables, importClauses)];
             text = importDeclaration.getFullText();
           } else {
             const exportsMap = getAllExportNode(resolvedPath);
@@ -614,10 +584,7 @@ export function extractUsedCode(filePath, externalVariables) {
   let text = externalSources.join(`\n`);
   const externals = getExternalVariables(text);
 
-  if (
-    externals.length &&
-    getArrayIntersection(lastExternals, externals).length !== externals.length
-  ) {
+  if (externals.length && getArrayIntersection(lastExternals, externals).length !== externals.length) {
     lastExternals = [...externals];
     const newExternals = extractUsedCode(filePath, externals);
     lastExternals = [];

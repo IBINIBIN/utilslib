@@ -23,16 +23,13 @@ export const isServer = typeof window === "undefined";
 type EEventMap<E extends Node> = E extends HTMLElement
   ? HTMLElementEventMap
   : E extends Document
-  ? DocumentEventMap
-  : E extends Window
-  ? WindowEventMap
-  : GlobalEventHandlersEventMap;
+    ? DocumentEventMap
+    : E extends Window
+      ? WindowEventMap
+      : GlobalEventHandlersEventMap;
 
 // 辅助类型，根据传入的节点类型 E 获取对应的事件处理函数类型
-type EEventHandler<E extends Node, K extends keyof EEventMap<E>> = (
-  this: E,
-  ev: EEventMap<E>[K]
-) => any;
+type EEventHandler<E extends Node, K extends keyof EEventMap<E>> = (this: E, ev: EEventMap<E>[K]) => any;
 
 /**
  * 给指定元素添加事件监听器，并返回一个函数用于移除监听器。
@@ -53,20 +50,12 @@ export function on<E extends Node, K extends keyof EEventMap<E>>(
   element: E,
   event: K,
   handler: EEventHandler<E, K>,
-  options?: boolean | AddEventListenerOptions
+  options?: boolean | AddEventListenerOptions,
 ): typeof noop {
   if (element && event && handler) {
-    element.addEventListener(
-      event as string,
-      handler as EventListenerOrEventListenerObject,
-      options
-    );
+    element.addEventListener(event as string, handler as EventListenerOrEventListenerObject, options);
     return () => {
-      element.removeEventListener(
-        event as string,
-        handler as EventListenerOrEventListenerObject,
-        options
-      );
+      element.removeEventListener(event as string, handler as EventListenerOrEventListenerObject, options);
     };
   }
   return noop;
@@ -90,7 +79,7 @@ export function once<E extends Node, K extends keyof EEventMap<E>>(
   element: E,
   event: K,
   handler: EEventHandler<E, K>,
-  options?: boolean | AddEventListenerOptions
+  options?: boolean | AddEventListenerOptions,
 ): typeof noop {
   const callback: EEventHandler<E, K> = function (e) {
     handler.call(this, e);
@@ -110,9 +99,7 @@ export function once<E extends Node, K extends keyof EEventMap<E>>(
  * @param {T} node - 可以是一个字符串选择器、一个 HTMLElement、或返回 HTMLElement 的函数。
  * @returns {HTMLElement | Element | undefined} 返回找到的 HTMLElement 或 Element，找不到则返回 undefined。
  */
-export function getElement(
-  node: Element | HTMLElement | Function | string
-): HTMLElement | Element | undefined {
+export function getElement(node: Element | HTMLElement | Function | string): HTMLElement | Element | undefined {
   const attachNode = node instanceof Function ? node() : node;
   if (!attachNode) {
     return undefined;
@@ -131,13 +118,10 @@ export function getElement(
  * @param {T} node - 可以是一个字符串选择器、一个 HTMLElement、或返回 HTMLElement 的函数。
  * @returns {HTMLElement | Element } 返回找到的 HTMLElement 或 Element，找不到则返回 undefined。
  */
-export const getAttach: (
-  ...args: Parameters<typeof getElement>
-) => NonNullable<ReturnType<typeof getElement>> = function (
-  node
-): NonNullable<ReturnType<typeof getElement>> {
-  return getElement(node) ?? document.body;
-};
+export const getAttach: (...args: Parameters<typeof getElement>) => NonNullable<ReturnType<typeof getElement>> =
+  function (node): NonNullable<ReturnType<typeof getElement>> {
+    return getElement(node) ?? document.body;
+  };
 
 // #endregion -- end
 
@@ -163,7 +147,7 @@ export const off = ((): any => {
       element: Node,
       event: string,
       handler: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions
+      options?: boolean | AddEventListenerOptions,
     ): any => {
       if (element && event) {
         element.removeEventListener(event, handler, options);
@@ -185,10 +169,7 @@ export const off = ((): any => {
 export function attachListeners(elm: Element) {
   const offs: Array<() => void> = [];
   return {
-    add<K extends keyof GlobalEventHandlersEventMap>(
-      type: K,
-      listener: (ev: GlobalEventHandlersEventMap[K]) => void
-    ) {
+    add<K extends keyof GlobalEventHandlersEventMap>(type: K, listener: (ev: GlobalEventHandlersEventMap[K]) => void) {
       if (!type) return;
       on(elm, type, listener);
       offs.push(() => {
@@ -482,12 +463,7 @@ export function elementInViewport(elm: HTMLElement, parent?: HTMLElement): boole
       rect.right <= parentRect.right
     );
   }
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom + 80 <= window.innerHeight &&
-    rect.right <= window.innerWidth
-  );
+  return rect.top >= 0 && rect.left >= 0 && rect.bottom + 80 <= window.innerHeight && rect.right <= window.innerWidth;
 }
 
 /**
@@ -561,8 +537,7 @@ export function getWindowSize(): { width: number; height: number } {
  */
 export function getScrollbarWidth() {
   const scrollDiv = document.createElement("div");
-  scrollDiv.style.cssText =
-    "width: 99px; height: 99px; overflow: scroll; position: absolute; top: -9999px;";
+  scrollDiv.style.cssText = "width: 99px; height: 99px; overflow: scroll; position: absolute; top: -9999px;";
   document.body.appendChild(scrollDiv);
   const scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
   document.body.removeChild(scrollDiv);
@@ -577,7 +552,7 @@ export function getScrollbarWidth() {
  */
 export function observeNodeSizeChange(
   targetNode: Element,
-  callback: (rect: DOMRectReadOnly, entry: ResizeObserverEntry) => unknown
+  callback: (rect: DOMRectReadOnly, entry: ResizeObserverEntry) => unknown,
 ): typeof noop {
   // 创建一个ResizeObserver实例并将回调函数传入
   const resizeObserver = new ResizeObserver(([entry]) => {

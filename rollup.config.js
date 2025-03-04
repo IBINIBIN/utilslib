@@ -57,9 +57,7 @@ const createOutputList = (name, enter) => {
 };
 
 const createConfig = (enter) => {
-  const { name } = JSON.parse(
-    readFileSync(path.resolve(getPackageDistPath(enter), "..", "package.json"), "utf-8")
-  );
+  const { name } = JSON.parse(readFileSync(path.resolve(getPackageDistPath(enter), "..", "package.json"), "utf-8"));
   const [packageName, subPackageName] = name.slice(1).split("/");
 
   function letterUp(word) {

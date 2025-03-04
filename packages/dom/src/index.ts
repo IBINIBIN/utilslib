@@ -14,7 +14,7 @@ export * from "./easing";
 export function getLinesCountAfterInsertion<C = string | HTMLElement>(
   parent: HTMLElement,
   content: C,
-  insertBefore: HTMLElement | null = null
+  insertBefore: HTMLElement | null = null,
 ): number {
   let clone: string | HTMLElement = document.createElement("div");
   if (typeof content === "string") {
@@ -60,7 +60,7 @@ export function getImageSize(imageUrl: string): Promise<{ width: number; height:
  */
 export function listenClickOutside<T extends string | Element | undefined>(
   target: T | T[],
-  callback: () => void
+  callback: () => void,
 ): () => void {
   function getEls(target: any): Element[] {
     if (typeof target === "string") {
@@ -147,7 +147,7 @@ export function downloadFile(src: Blob | string, fileName: string = ""): void {
  */
 export function loadJS(
   files: string | string[],
-  config?: Pick<Partial<HTMLScriptElement>, "type" | "async">
+  config?: Pick<Partial<HTMLScriptElement>, "type" | "async">,
 ): Promise<void[]> {
   // 获取head标签
   const head = document.getElementsByTagName("head")[0];
@@ -175,14 +175,10 @@ export function loadJS(
         scriptElement.addEventListener("load", () => resolve(), false);
 
         // 监听error事件，如果加载失败则reject
-        scriptElement.addEventListener(
-          "error",
-          () => reject(new Error(`Failed to load script: ${file}`)),
-          false
-        );
+        scriptElement.addEventListener("error", () => reject(new Error(`Failed to load script: ${file}`)), false);
 
         head.appendChild(scriptElement);
       });
-    })
+    }),
   );
 }

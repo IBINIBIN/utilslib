@@ -57,9 +57,7 @@ async function getExportSources(filePath, exportName) {
   sourceFile.forEachChild((node) => {
     switch (node.getKind()) {
       case SyntaxKind.VariableStatement:
-        const declarations = node
-          .getFirstChildByKind(SyntaxKind.VariableDeclarationList)
-          .getDeclarations();
+        const declarations = node.getFirstChildByKind(SyntaxKind.VariableDeclarationList).getDeclarations();
         const same = declarations.some((item) => {
           const name = item.getName();
           return name === exportName;
@@ -244,7 +242,7 @@ function getAllExportNode(sourceFilePath) {
     if (isHasArray(namedExports)) {
       addExportMap(
         sourceFilePath,
-        namedExports.map((node) => node.getName())
+        namedExports.map((node) => node.getName()),
       );
     } else if (namespaceExport) {
       addExportMap(sourceFilePath, namespaceExport.getName());

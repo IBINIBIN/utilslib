@@ -70,7 +70,7 @@ export function findNodeByDFS<T extends Record<string, any>>(
   arr: NodeProps<T>["arr"],
   compareAttr: NodeProps<T>["compareAttr"],
   nextLevelAttr: NodeProps<T>["nextLevelAttr"],
-  value: NodeProps<T>["value"]
+  value: NodeProps<T>["value"],
 ) {
   return findNode<T>({ arr, compareAttr, nextLevelAttr, value });
 }
@@ -105,7 +105,7 @@ export function flattenTreeArray<
   },
   P extends keyof T,
   ID extends keyof T,
-  R = T & { level: number; parentId: T[ID] }
+  R = T & { level: number; parentId: T[ID] },
 >(arr: T[], childrenProperty: P, idAttr: ID, includeParent: boolean = true): R[] {
   function flattenRecursive(nodes: T[], level: number, parentId: T[ID] | undefined): R[] {
     return nodes.reduce((prev: R[], node: T) => {
@@ -115,9 +115,7 @@ export function flattenTreeArray<
 
       let childrenArray: R[] = [flattenedNode];
       if (Array.isArray(children)) {
-        childrenArray = flattenRecursive(children, level + 1, id).concat(
-          includeParent ? flattenedNode : []
-        );
+        childrenArray = flattenRecursive(children, level + 1, id).concat(includeParent ? flattenedNode : []);
       }
 
       return prev.concat(childrenArray);
