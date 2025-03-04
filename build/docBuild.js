@@ -53,7 +53,7 @@ async function fetchCsbLinkHandler() {
       };
 
       csbLinkMap.set(demoName, await createSandboxLink(csbConfig));
-    })
+    }),
   );
 }
 
@@ -67,11 +67,7 @@ async function main() {
   /** 获取demo文件夹Path. 为后面生成codesandbox的iframe预览链接做铺垫 */
   app.converter.on(Converter.EVENT_CREATE_SIGNATURE, (ctx, decRef) => {
     try {
-      const demoDirPath = path.resolve(
-        decRef.sources[0].fullFileName,
-        "../../demo-codesandbox",
-        decRef.name
-      );
+      const demoDirPath = path.resolve(decRef.sources[0].fullFileName, "../../demo-codesandbox", decRef.name);
 
       fs.statSync(demoDirPath);
       const codePenTag = new CommentTag("@例子", [
@@ -198,13 +194,7 @@ function convertMDCode(code, type = "js") {
 
 async function dataConvertMD(item, module, tsSnippetsJson, jsSnippetsJson) {
   const baseFileName = module.name.replace(`${ORGANIZATION_NAME}/`, "");
-  const codesandboxExampleDirPath = resolve(
-    ROOT_PATH,
-    "packages",
-    baseFileName,
-    "demo-codesandbox",
-    item.name
-  );
+  const codesandboxExampleDirPath = resolve(ROOT_PATH, "packages", baseFileName, "demo-codesandbox", item.name);
   let code = "";
   const { name, signatures } = item;
   const kindName = ReflectionKind[item.kind];
@@ -310,10 +300,10 @@ async function handleSingleSourceCode(c) {
     const { name, children = [], packageVersion } = module;
     const baseFileName = name.replace(`${ORGANIZATION_NAME}/`, "");
     const jsSnippetsJson = JSON.parse(
-      fs.readFileSync(resolve(ROOT_PATH, "packages", baseFileName, "lib", "jsSnippets.json"))
+      fs.readFileSync(resolve(ROOT_PATH, "packages", baseFileName, "lib", "jsSnippets.json")),
     );
     const tsSnippetsJson = JSON.parse(
-      fs.readFileSync(resolve(ROOT_PATH, "packages", baseFileName, "lib", "tsSnippets.json"))
+      fs.readFileSync(resolve(ROOT_PATH, "packages", baseFileName, "lib", "tsSnippets.json")),
     );
     for (const item of children) {
       console.log("当前处理:", item?.name);
@@ -329,20 +319,17 @@ async function handleSingleSourceCode(c) {
           resolve(p, `sourceCode.js`),
           await format(setSourceCodeExportDefault(sourceCodeJs, item?.name), {
             parser: "typescript",
-          })
+          }),
         ),
 
         fs.writeFile(
           resolve(p, `sourceCode.ts`),
           await format(setSourceCodeExportDefault(sourceCodeTs, item?.name), {
             parser: "typescript",
-          })
+          }),
         ),
 
-        fs.writeFile(
-          resolve(p, `index.md`),
-          await dataConvertMD(item, module, tsSnippetsJson, jsSnippetsJson)
-        ),
+        fs.writeFile(resolve(p, `index.md`), await dataConvertMD(item, module, tsSnippetsJson, jsSnippetsJson)),
       ]);
     }
   }

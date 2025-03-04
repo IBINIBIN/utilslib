@@ -41,6 +41,9 @@
     "vue": "^3.4.33"
   },
   "dependencies": {
+    "@utilslib/core": "workspace:^",
+    "@utilslib/dom": "workspace:^",
+    "@utilslib/types": "workspace:^",
     "lodash": "^4.17.21"
   }
 }

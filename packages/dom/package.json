@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@utilslib/core": "workspace:*",
+    "@utilslib/types": "workspace:^",
     "clipboard": "^2.0.11",
     "raf": "^3.4.1"
   },

@@ -1,25 +1,4 @@
 /**
- * 获取两个数组的交集，通过指定字段属性进行判断。
- *
- * @type  {<T, K extends keyof T>(arr1: T[], arr2: T[], key: K) => T[]}
- * @param {T[]} arr1 - 第一个数组。「主数组,当返回的内容从主数组中获取」
- * @param {T[]} arr2 - 第二个数组。
- * @param {K extends keyof T} [key] - 可选的字段属性，用于判断交集。
- * @returns {T[]} 交集的数组。
- */
-export function getArrayIntersection<T, K extends keyof T = keyof T>(
-  arr1: T[],
-  arr2: T[],
-  key?: K
-): T[] {
-  if (key) {
-    const set = new Set(arr2.map((item) => item[key]));
-    return arr1.filter((item) => set.has(item[key]));
-  }
-  return arr1.filter((item) => arr2.includes(item));
-}
-
-/**
  * 确保给定数字在指定范围内。
  *
  * @param {number} numberToClamp - 要限制的数字。
@@ -64,7 +43,7 @@ type OnlyObject = {
  *
  * @template T - 列表中元素的类型。
  * @template R - 属性的键名。
- * @template U - 当T为对象类型时，U为R的类型；否则为undefined。
+ * @template B - 当T为对象类型时，U为R的类型；否则为undefined。
  * @param {T[]} list - 要过滤的列表。
  * @param {T extends OnlyObject
  *   ? {
@@ -81,7 +60,7 @@ type OnlyObject = {
  * @type {<
  *   T,
  *   R extends keyof T,
- *   U = T extends OnlyObject ? R : undefined
+ *   B = T extends OnlyObject ? R : undefined
  * >(
  *   list: T[],
  *   opts: T extends OnlyObject
@@ -97,7 +76,7 @@ type OnlyObject = {
  *       }>
  * ) => T[]}
  */
-export function filterList<T, R extends keyof T, U = T extends OnlyObject ? R : undefined>(
+export function filterList<T, R extends keyof T, B = T extends OnlyObject ? R : undefined>(
   list: T[],
   opts: T extends OnlyObject
     ? {
@@ -109,7 +88,7 @@ export function filterList<T, R extends keyof T, U = T extends OnlyObject ? R : 
         property: undefined;
         includes: unknown[];
         excludes: unknown[];
-      }>
+      }>,
 ): T[] {
   const { property, includes = [], excludes = [] } = opts;
 
@@ -142,7 +121,7 @@ export function filterList<T, R extends keyof T, U = T extends OnlyObject ? R : 
  * omitRange(['a', 'b', 'c', 'd', 'e'], [1, 3]) // ['a', 'e']
  */
 export function omitRange<T>(arr: T[], range: number | [number, number]): T[] {
-  let _range = typeof range === "number" ? [range, range] : range;
+  const _range = typeof range === "number" ? [range, range] : range;
   const [start, end] = _range;
   return arr.filter((_, index) => index < start || index > end);
 }
@@ -163,7 +142,94 @@ export function omitRange<T>(arr: T[], range: number | [number, number]): T[] {
  * pickRange(['a', 'b', 'c', 'd', 'e'], [1, 3]) // ['b', 'c', 'd']
  */
 export function pickRange<T>(arr: T[], range: number | [number, number]): T[] {
-  let _range = typeof range === "number" ? [range, range] : range;
+  const _range = typeof range === "number" ? [range, range] : range;
   const [start, end] = _range;
   return arr.filter((_, index) => index >= start && index <= end);
+}
+
+/**
+ * (A∪B) 并集
+ *
+ * @template T - 数组元素类型
+ * @template K - 用于判断的属性键名类型
+ * @param {T[]} A - 第一个数组
+ * @param {T[]} B - 第二个数组
+ * @param {K} [key] - 可选的用于判断的属性键名
+ * @returns {T[]} 并集数组
+ */
+export function getArrayUnion<T, K extends keyof T>(A: T[], B: T[], key?: K): T[] {
+  if (key) {
+    const map = new Map<unknown, T>();
+    A.forEach((item) => map.set(item[key], item));
+    B.forEach((item) => map.set(item[key], item));
+    return Array.from(map.values());
+  }
+  return Array.from(new Set([...A, ...B]));
+}
+
+/**
+ * (A∩B) 交集
+ *
+ * @type  {<T, K extends keyof T>(A: T[], B: T[], key: K) => T[]}
+ * @param {T[]} A - 第一个数组。「主数组,当返回的内容从主数组中获取」
+ * @param {T[]} B - 第二个数组。
+ * @param {K extends keyof T} [key] - 可选的字段属性，用于判断交集。
+ * @returns {T[]} 交集的数组。
+ */
+export function getArrayIntersection<T, K extends keyof T = keyof T>(A: T[], B: T[], key?: K): T[] {
+  if (key) {
+    const set = new Set(B.map((item) => item[key]));
+    return A.filter((item) => set.has(item[key]));
+  }
+  return A.filter((item) => B.includes(item));
+}
+
+/**
+ * (A-B) 差集
+ *
+ * @template T - 数组元素类型
+ * @template K - 用于判断的属性键名类型
+ * @param {T[]} A - 第一个数组
+ * @param {T[]} B - 第二个数组
+ * @param {K} [key] - 可选的用于判断的属性键名
+ * @returns {T[]} 差集数组
+ */
+export function getArrayDifference<T, K extends keyof T>(A: T[], B: T[], key?: K): T[] {
+  if (key) {
+    const set = new Set(B.map((item) => item[key]));
+    return A.filter((item) => !set.has(item[key]));
+  }
+  return A.filter((item) => !B.includes(item));
+}
+
+/**
+ * (A⊆U) 子集
+ *
+ * @template T - 数组元素类型
+ * @template K - 用于判断的属性键名类型
+ * @param {T[]} A - 待判断的子集数组
+ * @param {T[]} B - 全集数组
+ * @param {K} [key] - 可选的用于判断的属性键名
+ * @returns {T[]} 子集数组
+ */
+export function getArraySubset<T, K extends keyof T>(A: T[], B: T[], key?: K): T[] {
+  if (key) {
+    const universeSet = new Set(B.map((item) => item[key]));
+    return A.filter((item) => universeSet.has(item[key]));
+  }
+  return A.filter((item) => B.includes(item));
+}
+
+/**
+ * (A⊆U) A是U的子集
+ *
+ * @template T - 数组元素类型
+ * @template K - 用于判断的属性键名类型
+ * @param {T[]} A - 待判断的子集数组
+ * @param {T[]} B - 全集数组
+ * @param {K} [key] - 可选的用于判断的属性键名
+ * @returns {boolean} 如果是子集返回true，否则返回false
+ */
+export function isSubset<T, K extends keyof T>(A: T[], B: T[], key?: K): boolean {
+  return Boolean(getArraySubset(A, B, key).length);
 }

@@ -13,7 +13,7 @@ import { isObject } from "./is";
 export function recursionHandler<T extends Record<string, any>, K extends keyof T>(
   obj: T,
   childrenKey: K,
-  cb: (item: T) => T
+  cb: (item: T) => T,
 ): any {
   const _obj = cb(obj);
 

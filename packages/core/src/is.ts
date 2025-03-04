@@ -17,7 +17,7 @@ function getType(value: unknown): string {
  * @param {T | undefined} value - 要检查的值。
  * @returns {value is T} 如果值不为 Undefined 类型，则返回 true，否则返回 false。
  */
-export function isDef<T extends unknown>(value: T | undefined): value is T {
+export function isDef<T>(value: T | undefined): value is T {
   return typeof value !== "undefined";
 }
 
@@ -77,7 +77,7 @@ export function isString(value: unknown): value is string {
  * @param {unknown} value - 要检查的值。
  * @returns {value is BigInt} 如果值为 BigInt 类型，则返回 true，否则返回 false。
  */
-export function isBigInt(value: unknown): value is BigInt {
+export function isBigInt(value: unknown): value is bigint {
   return typeof value === "bigint";
 }
 
@@ -221,7 +221,7 @@ export function isNullOrUndefined(value: unknown): value is undefined | null {
  * @param {T} value - 要检查的值。
  * @returns {value is NonNullable<T>} 如果值为 `undefined` 或 `null`，则返回 `true`，否则返回 `false`。
  */
-export function isNonNullable<T extends unknown>(value: T): value is NonNullable<T> {
+export function isNonNullable<T>(value: T): value is NonNullable<T> {
   return !isNullOrUndefined(value);
 }
 
@@ -282,13 +282,7 @@ export function isEmptyArray(value: unknown): value is any[] {
  * @returns {value is undefined | null | [] | ""} 如果值为空，则返回 true，否则返回 false。
  */
 export function isEmpty(value: unknown): value is undefined | null | [] | "" {
-  return (
-    isUndefined(value) ||
-    isNull(value) ||
-    isEmptyArray(value) ||
-    isEmptyObject(value) ||
-    isEmptyString(value)
-  );
+  return isUndefined(value) || isNull(value) || isEmptyArray(value) || isEmptyObject(value) || isEmptyString(value);
 }
 
 /**

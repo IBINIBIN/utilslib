@@ -8,10 +8,7 @@
  * @template T - 对象类型。
  * @template K - 要排除的属性键名类型。
  */
-export function omit<T extends Record<string, any>, K extends keyof T>(
-  obj: T,
-  keys: K[]
-): Omit<T, K> {
+export function omit<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   const clone = { ...obj };
   keys.forEach((key) => delete clone[key]);
   return clone;
@@ -27,10 +24,7 @@ export function omit<T extends Record<string, any>, K extends keyof T>(
  * @template T - 对象类型。
  * @template K - 要选取的属性键名类型。
  */
-export function pick<T extends Record<string, any>, K extends keyof T>(
-  obj: T,
-  keys: K[]
-): Pick<T, K> {
+export function pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   const pickedObject: Partial<Pick<T, K>> = {};
 
   keys.forEach((key) => {
@@ -51,7 +45,7 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
  * @throws {TypeError} 当枚举值类型不是 string 或 number 时抛出错误
  */
 export function createEnum<T extends { [key: string]: string | number }>(
-  enumObj: T
+  enumObj: T,
 ): Readonly<T & { [K in T[keyof T]]: keyof T }> {
   const result = Object.create({}) as T & { [K in T[keyof T]]: keyof T };
 
@@ -91,7 +85,7 @@ export function createEnumWithDescription<
     };
   },
 >(
-  enumObj: T
+  enumObj: T,
 ): Readonly<
   { [K in keyof T]: T[K]["value"] } & { [K in T[keyof T]["value"]]: keyof T } & {
     getDescription(key: keyof T): string;
@@ -99,16 +93,18 @@ export function createEnumWithDescription<
 > {
   const [simpleEnum, descriptions] = Object.entries(enumObj).reduce(
     ([values, descs], [key, { value, description }]) => {
-      return [((values[key] = value), values), descs.set(key, description).set(value, description)];
+      return [((values[key] = value), values), descs.set(key, description).set(String(value), description)];
     },
-    [{} as { [key: string]: string | number }, new Map<string | number, string>()]
+    [{} as { [key: string]: string | number }, new Map<string | number, string>()],
   );
 
   const result = createEnum(simpleEnum) as any;
-  Object.defineProperty(Object.getPrototypeOf(result), "getDescription", {
-    value(key: keyof T) {
-      return descriptions.get(result[key]);
-    },
+  Object.defineProperty(Object.getPrototypeOf(result), "desc", {
+    value: new Proxy(descriptions, {
+      get(target, prop: string) {
+        return target.get(prop);
+      },
+    }),
     enumerable: false,
     writable: false,
     configurable: false,
