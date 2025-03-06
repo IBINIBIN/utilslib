@@ -8,6 +8,10 @@
     "link": "/@utilslib/dom/index"
   },
   {
+    "text": "types",
+    "link": "/@utilslib/types/index"
+  },
+  {
     "text": "vue2",
     "link": "/@utilslib/vue2/index"
   },

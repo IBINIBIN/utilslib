@@ -72,10 +72,10 @@ export function isString(value: unknown): value is string {
 }
 
 /**
- * 检查一个值是否为 BigInt 类型。
+ * 检查一个值是否为 bigint 类型。
  *
  * @param {unknown} value - 要检查的值。
- * @returns {value is BigInt} 如果值为 BigInt 类型，则返回 true，否则返回 false。
+ * @returns {value is bigint} 如果值为 bigint 类型，则返回 true，否则返回 false。
  */
 export function isBigInt(value: unknown): value is bigint {
   return typeof value === "bigint";
@@ -236,16 +236,6 @@ export function isEmptyString(value: unknown): value is "" {
 }
 
 /**
- * 检查一个值是否为非空字符串。
- *
- * @param {unknown} value - 要检查的值。
- * @returns {value is string} 如果值为非空字符串，则返回 true，否则返回 false。
- */
-export function isHasString(value: unknown): value is string {
-  return isString(value) && value.length > 0;
-}
-
-/**
  * 检查一个值是否为空对象。
  *
  * @param {unknown} value - 要检查的值。
@@ -253,16 +243,6 @@ export function isHasString(value: unknown): value is string {
  */
 export function isEmptyObject(value: unknown): value is object {
   return isObject(value) && !isNull(value) && Object.keys(value).length === 0;
-}
-
-/**
- * 检查一个值是否为非空对象。
- *
- * @param {unknown} value - 要检查的值。
- * @returns {value is object} 如果值有最少一个可枚举属性，则返回 true，否则返回 false。
- */
-export function isHasObject(value: unknown): value is object {
-  return isObject(value) && Object.keys(value).length > 0;
 }
 
 /**
@@ -286,12 +266,32 @@ export function isEmpty(value: unknown): value is undefined | null | [] | "" {
 }
 
 /**
+ * 检查一个值是否为非空对象。
+ *
+ * @param {unknown} value - 要检查的值。
+ * @returns {value is object} 如果值有最少一个可枚举属性，则返回 true，否则返回 false。
+ */
+export function isNonEmptyObject(value: unknown): value is object {
+  return isObject(value) && Object.keys(value).length > 0;
+}
+
+/**
+ * 检查一个值是否为非空字符串。
+ *
+ * @param {unknown} value - 要检查的值。
+ * @returns {value is string} 如果值为非空字符串，则返回 true，否则返回 false。
+ */
+export function isNonEmptyString(value: unknown): value is string {
+  return isString(value) && value.length > 0;
+}
+
+/**
  * 检查一个值是否为非空数组。
  *
  * @param {unknown} value - 要检查的值。
  * @returns {value is any[]} 如果值为非空数组，则返回 true，否则返回 false。
  */
-export function isHasArray(value: unknown): value is any[] {
+export function isNonEmptyArray(value: unknown): value is any[] {
   return Array.isArray(value) && value.length > 0;
 }
 

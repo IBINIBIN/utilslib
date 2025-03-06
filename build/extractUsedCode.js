@@ -4,6 +4,15 @@ import { fileURLToPath } from "node:url";
 
 import { Project, SyntaxKind, SymbolFlags } from "ts-morph";
 
+// 获取项目根路径
+const dirname = fileURLToPath(new URL(".", import.meta.url));
+const ROOT_PATH = resolve(dirname, "..");
+
+// 缓存已处理的导出文件
+const exportFileMap = new Map();
+// 缓存上一次处理的外部变量，避免无限递归
+let lastExternals = [];
+
 // #region ====================== 公共方法 ======================
 
 /**
@@ -16,7 +25,7 @@ import { Project, SyntaxKind, SymbolFlags } from "ts-morph";
 function isTargetInOptions(target, ...options) {
   return options.some((option) => {
     if (Array.isArray(option)) {
-      return option.some((item) => item === target);
+      return option.includes(target);
     }
     return option === target;
   });
@@ -33,13 +42,7 @@ function isTargetInOptions(target, ...options) {
  * const resultArray = toArray(["value1", "value2"]); // ['value1', 'value2']
  */
 function toArray(value) {
-  let list;
-  if (Array.isArray(value)) {
-    list = value;
-  } else {
-    list = [value];
-  }
-  return list;
+  return Array.isArray(value) ? value : [value];
 }
 
 /**
@@ -74,13 +77,15 @@ function createRandomString(length = 8) {
 /**
  * 获取两个数组的交集，通过指定字段属性进行判断。
  *
- * @type  {<T, K extends keyof T>(arr1: T[], arr2: T[], key: K) => T[]}
+ * @type  {<T, K extends keyof T>(arr1: T[], arr2: T[], key?: K) => T[]}
  * @param {T[]} arr1 - 第一个数组。「主数组,当返回的内容从主数组中获取」
  * @param {T[]} arr2 - 第二个数组。
  * @param {K extends keyof T} [key] - 可选的字段属性，用于判断交集。
  * @returns {T[]} 交集的数组。
  */
 function getArrayIntersection(arr1, arr2, key) {
+  if (!arr1 || !arr2) return [];
+
   if (key) {
     const set = new Set(arr2.map((item) => item[key]));
     return arr1.filter((item) => set.has(item[key]));
@@ -90,291 +95,207 @@ function getArrayIntersection(arr1, arr2, key) {
 
 // #endregion -- end
 
+/**
+ * 获取导入声明中的命名导入列表
+ *
+ * @param {import('ts-morph').ImportDeclaration} importDecl - 导入声明
+ * @returns {string[]} - 命名导入列表
+ */
 function getImportClauseNameList(importDecl) {
-  return (
-    importDecl
-      .getImportClause()
-      ?.getNamedBindings()
-      ?.getElements()
-      ?.map((item) => item.getText()) ?? []
-  );
+  try {
+    return (
+      importDecl
+        .getImportClause()
+        ?.getNamedBindings()
+        ?.getElements()
+        ?.map((item) => item.getText()) ?? []
+    );
+  } catch (error) {
+    console.error("Error in getImportClauseNameList:", error);
+    return [];
+  }
 }
+
+/**
+ * 获取代码中的外部变量
+ *
+ * @param {string} code - 代码字符串
+ * @returns {string[]} - 外部变量列表
+ */
 function getExternalVariables(code) {
-  const project = new Project();
-  const sourceFile = project.createSourceFile("temp.ts", code);
+  try {
+    const project = new Project();
+    const sourceFile = project.createSourceFile("temp.ts", code);
 
-  const globalVarSymbols = project.getTypeChecker().getSymbolsInScope(sourceFile, SymbolFlags.Value);
+    const globalVarSymbols = project.getTypeChecker().getSymbolsInScope(sourceFile, SymbolFlags.Value);
 
-  // 将全局变量名称提取出来
-  const globalVarNames = new Set(globalVarSymbols.map((symbol) => symbol.getName()));
+    // 将全局变量名称提取出来
+    const globalVarNames = new Set(globalVarSymbols.map((symbol) => symbol.getName()));
 
-  // 获取类型检查器
-  const typeChecker = project.getTypeChecker();
+    // 获取类型检查器
+    const typeChecker = project.getTypeChecker();
 
-  // 获取全局符号中所有的类型
-  const globalTypeSymbols = typeChecker.getSymbolsInScope(sourceFile, SymbolFlags.Type);
+    // 获取全局符号中所有的类型
+    const globalTypeSymbols = typeChecker.getSymbolsInScope(sourceFile, SymbolFlags.Type);
 
-  // 提取类型名称
-  const globalTypeNames = globalTypeSymbols.map((symbol) => symbol.getName());
+    // 提取类型名称
+    const globalTypeNames = globalTypeSymbols.map((symbol) => symbol.getName());
 
-  const externalVariables = new Set();
-  const jsDefaultVariables = new Set(["arguments", "this", "Object", "undefined"]);
-  const TsTypeDefaultVariables = new Set(["Record"]);
+    const externalVariables = new Set();
+    const jsDefaultVariables = new Set([
+      "arguments",
+      "this",
+      "Object",
+      "undefined",
+      "Array",
+      "String",
+      "Number",
+      "Boolean",
+      "Function",
+      "Error",
+    ]);
+    const TsTypeDefaultVariables = new Set([
+      "Record",
+      "Partial",
+      "Required",
+      "Pick",
+      "Omit",
+      "Readonly",
+      "ReturnType",
+      "Parameters",
+    ]);
 
-  // 获取所有在代码中声明的标识符
-  const declaredIdentifiers = new Set();
-  sourceFile.forEachDescendant((node) => {
-    const nameNode = node.getNameNode?.();
-    const text = nameNode?.getText();
-    const kindName = node.getKindName();
+    // 获取所有在代码中声明的标识符
+    const declaredIdentifiers = new Set();
+    sourceFile.forEachDescendant((node) => {
+      try {
+        const nameNode = node.getNameNode?.();
+        const text = nameNode?.getText();
 
-    switch (node.getKind()) {
-      case SyntaxKind.MethodSignature:
-        declaredIdentifiers.add(node.getName());
-        break;
+        if (!text) return;
 
-      case SyntaxKind.PropertyAssignment:
-        declaredIdentifiers.add(text);
-        break;
-
-      case SyntaxKind.VariableDeclaration:
-        declaredIdentifiers.add(text);
-        break;
-
-      case SyntaxKind.FunctionDeclaration:
-      case SyntaxKind.BindingElement:
-      case SyntaxKind.VariableDeclaration:
-      case SyntaxKind.PropertySignature:
-      case SyntaxKind.PropertyAssignment:
-        declaredIdentifiers.add(text);
-        break;
-
-      case SyntaxKind.Parameter:
-        declaredIdentifiers.add(text);
-        break;
-      case SyntaxKind.TypeParameter:
-        declaredIdentifiers.add(text);
-        break;
-
-      case SyntaxKind.InterfaceDeclaration:
-        declaredIdentifiers.add(text);
-        break;
-      default:
-        break;
-    }
-  });
-
-  function getExternal(node) {
-    let l = [];
-
-    node.forEachChild((item) => {
-      l.push(getExternalVariablesByNode(item));
-      l.push(...getExternal(item));
+        switch (node.getKind()) {
+          case SyntaxKind.MethodSignature:
+          case SyntaxKind.PropertyAssignment:
+          case SyntaxKind.VariableDeclaration:
+          case SyntaxKind.FunctionDeclaration:
+          case SyntaxKind.BindingElement:
+          case SyntaxKind.PropertySignature:
+          case SyntaxKind.Parameter:
+          case SyntaxKind.TypeParameter:
+          case SyntaxKind.InterfaceDeclaration:
+          case SyntaxKind.PropertyDeclaration:
+            declaredIdentifiers.add(text);
+            break;
+        }
+      } catch (error) {
+        // 忽略单个节点处理错误，继续处理其他节点
+      }
     });
 
-    return [...new Set(l.filter(Boolean))];
-  }
+    /**
+     * 递归获取节点中的外部变量
+     *
+     * @param {import('ts-morph').Node} node - 节点
+     * @returns {string[]} - 外部变量列表
+     */
+    function getExternal(node) {
+      const results = [];
 
-  function validate(node, text) {
-    if (globalTypeNames.includes(text) || globalVarNames.has(text)) return;
-
-    if (isTargetInOptions(node.getKind(), [SyntaxKind.TypeReference])) {
-      return;
-    }
-
-    // 排除 TS 类型默认变量
-    if (TsTypeDefaultVariables.has(text)) {
-      return;
-    }
-    // 排除 JS 默认变量
-    if (jsDefaultVariables.has(text)) {
-      return;
-    }
-
-    // 排除已声明的标识符
-    if (declaredIdentifiers.has(text)) {
-      return;
-    }
-
-    const parent = node.getParent();
-
-    // 排除链式调用中的标识符
-    if (isTargetInOptions(parent.getKind(), [SyntaxKind.PropertyAccessExpression, SyntaxKind.MethodDeclaration])) {
-      return;
-    }
-
-    return true;
-  }
-
-  function getExternalVariablesByNode(node) {
-    if (
-      isTargetInOptions(node.getKind(), [
-        SyntaxKind.VariableDeclaration,
-        SyntaxKind.Parameter,
-        SyntaxKind.PropertyAssignment,
-      ])
-    ) {
-      const initKind = node.getInitializer?.()?.getKind();
-      const initText = node.getInitializer?.()?.getText?.();
-      if (isTargetInOptions(initKind, SyntaxKind.Identifier)) {
-        if (initText && validate(node, initText)) {
-          return initText;
+      node.forEachChild((item) => {
+        const externalVar = getExternalVariablesByNode(item);
+        if (externalVar) {
+          results.push(externalVar);
         }
-      }
-    } else if (isTargetInOptions(node.getKind(), [SyntaxKind.Identifier])) {
-      let text = node?.getText();
 
-      if (validate(node, text)) {
-        return text;
-      }
+        results.push(...getExternal(item));
+      });
+
+      return [...new Set(results.filter(Boolean))];
     }
-  }
 
-  const l = getExternal(sourceFile);
-  return l;
-}
+    /**
+     * 验证节点是否为外部变量
+     *
+     * @param {import('ts-morph').Node} node - 节点
+     * @param {string} text - 节点文本
+     * @returns {boolean} - 是否为外部变量
+     */
+    function validate(node, text) {
+      if (globalTypeNames.includes(text) || globalVarNames.has(text)) return false;
 
-let lastExternals = [];
+      if (isTargetInOptions(node.getKind(), [SyntaxKind.TypeReference])) {
+        return false;
+      }
 
-/**
- * 获取外部变量的源代码
- *
- * @param {string} filePath - 文件路径
- * @param {string[]} externalVariables - 外部变量数组
- * @returns {string} - 外部变量的源代码
- */
-function getExternalVariableSources(filePath, externalVariables) {
-  const baseDir = path.dirname(filePath);
-  const code = readFileContent(filePath);
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
+      // 排除 TS 类型默认变量
+      if (TsTypeDefaultVariables.has(text)) {
+        return false;
+      }
+      // 排除 JS 默认变量
+      if (jsDefaultVariables.has(text)) {
+        return false;
+      }
 
-  let noHandleVariableList = [];
+      // 排除已声明的标识符
+      if (declaredIdentifiers.has(text)) {
+        return false;
+      }
 
-  const externalSources = [];
+      const parent = node.getParent();
 
-  // 遍历外部变量数组
-  for (const variable of externalVariables) {
-    if (isTargetInOptions(variable, noHandleVariableList)) continue;
+      // 排除链式调用中的标识符
+      if (isTargetInOptions(parent?.getKind(), [SyntaxKind.PropertyAccessExpression, SyntaxKind.MethodDeclaration])) {
+        return false;
+      }
 
-    const identifierNodeMap = sourceFile
-      .getDescendantsOfKind(SyntaxKind.Identifier)
-      .filter((node) => {
-        return node.getText() === variable && !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression);
-      })
-      .reduce((prev, cur) => {
-        return {
-          ...prev,
-          [cur.getText()]: cur,
-        };
-      }, {});
+      return true;
+    }
 
-    for (const [key, identifierNode] of Object.entries(identifierNodeMap)) {
-      const declaration = identifierNode.getDefinitionNodes()[0];
+    /**
+     * 获取节点中的外部变量
+     *
+     * @param {import('ts-morph').Node} node - 节点
+     * @returns {string|undefined} - 外部变量
+     */
+    function getExternalVariablesByNode(node) {
+      try {
+        if (
+          isTargetInOptions(node.getKind(), [
+            SyntaxKind.VariableDeclaration,
+            SyntaxKind.Parameter,
+            SyntaxKind.PropertyAssignment,
+          ])
+        ) {
+          const initializer = node.getInitializer?.();
+          if (!initializer) return;
 
-      if (declaration) {
-        let text = "";
-        const importDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
-        const varDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.VariableStatement);
-        if (varDeclaration) {
-          text = varDeclaration.getFullText();
-        } else if (importDeclaration) {
-          const exportRelatedPath = importDeclaration.getModuleSpecifier()?.getText().replace(/['"]/g, "");
-          const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+          const initKind = initializer.getKind();
+          const initText = initializer.getText?.();
 
-          // 处理外部模块
-          if (!resolvedPath) {
-            const importClauses = getImportClauseNameList(importDeclaration);
-            noHandleVariableList = [...noHandleVariableList, ...getArrayIntersection(externalVariables, importClauses)];
-            text = importDeclaration.getFullText();
-          } else {
-            const exportsMap = getAllExportNode(resolvedPath);
-
-            let targetPath = "";
-            for (const [key, val] of exportsMap) {
-              const target = val.find((item) => item === declaration.getText());
-              if (target) {
-                targetPath = key;
-              }
+          if (isTargetInOptions(initKind, SyntaxKind.Identifier)) {
+            if (initText && validate(node, initText)) {
+              return initText;
             }
-            text = getExternalVariableSources(targetPath, [declaration.getText()]);
           }
-        } else {
-          text = declaration.getFullText();
+        } else if (isTargetInOptions(node.getKind(), [SyntaxKind.Identifier])) {
+          let text = node?.getText();
+
+          if (text && validate(node, text)) {
+            return text;
+          }
         }
-        text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
-        externalSources.push(text);
+      } catch (error) {
+        // 忽略单个节点处理错误
+        return undefined;
       }
     }
+
+    return getExternal(sourceFile);
+  } catch (error) {
+    console.error("Error in getExternalVariables:", error);
+    return [];
   }
-
-  let text = externalSources.join(`\n`);
-  const externals = getExternalVariables(text);
-
-  if (externals.length && getArrayIntersection(lastExternals, externals).length !== externals.length) {
-    lastExternals = [...externals];
-    const newExternals = getExternalVariableSources(filePath, externals);
-    externalSources.unshift(newExternals);
-  }
-
-  return externalSources.join("\n\n");
-}
-
-/**
- * 获取外部变量的源代码
- *
- * @param {string} filePath - 文件路径
- * @param {string} exportName - 导出的变量名
- * @returns {string} - 外部变量的源代码
- */
-function getExportSources(filePath, exportName) {
-  console.log(`当前处理:`, exportName);
-  let code = getExternalVariableSources(filePath, [exportName]);
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__getExternalVariableSources.ts", code);
-  let commentText = "";
-  // 获取export声明变量
-  sourceFile.forEachChild((node) => {
-    switch (node.getKind()) {
-      case SyntaxKind.VariableStatement:
-        const declarations = node.getFirstChildByKind(SyntaxKind.VariableDeclarationList).getDeclarations();
-        const same = declarations.some((item) => {
-          const name = item.getName();
-          return name === exportName;
-        });
-
-        if (same) {
-          commentText = node
-            .getJsDocs()
-            .find((Jsdoc) => Jsdoc.getCommentText?.())
-            ?.getCommentText?.();
-        } else {
-          node.setIsExported(false);
-        }
-
-        break;
-      case SyntaxKind.FunctionDeclaration:
-        if (node.getName?.() === exportName) {
-          commentText = node
-            .getJsDocs()
-            .find((Jsdoc) => Jsdoc.getCommentText?.())
-            ?.getCommentText?.();
-        } else if (node.hasExportKeyword?.()) {
-          node.setIsExported(false);
-        }
-        break;
-
-      default:
-        break;
-    }
-  });
-
-  return {
-    code: sourceFile.getFullText(),
-    type: "ts",
-    name: exportName,
-    intro: commentText,
-  };
 }
 
 /**
@@ -382,17 +303,28 @@ function getExportSources(filePath, exportName) {
  *
  * @param {string} importPath - 导入路径
  * @param {string} baseDir - 基础目录
- * @returns {string} - 解析后的文件路径
+ * @returns {string|null} - 解析后的文件路径，如果无法解析则返回null
  */
 function resolveImportPath(importPath, baseDir) {
-  if (importPath.startsWith(".")) {
-    return resolve(baseDir, importPath) + ".ts";
-  }
-  // 如果是monorepo中的包路径
-  const [scope, packageName] = importPath.split("/");
-  if (scope.startsWith("@")) {
-    const packagePath = resolve(ROOT_PATH, "packages", packageName, "src", "index.ts");
-    return packagePath;
+  try {
+    if (!importPath) return null;
+
+    if (importPath.startsWith(".")) {
+      const resolvedPath = resolve(baseDir, importPath) + ".ts";
+      return fs.existsSync(resolvedPath) ? resolvedPath : null;
+    }
+
+    // 如果是monorepo中的包路径
+    const [scope, packageName] = importPath.split("/");
+    if (scope && scope.startsWith("@")) {
+      const packagePath = resolve(ROOT_PATH, "packages", packageName, "src", "index.ts");
+      return fs.existsSync(packagePath) ? packagePath : null;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error resolving import path ${importPath}:`, error);
+    return null;
   }
 }
 
@@ -401,44 +333,41 @@ function resolveImportPath(importPath, baseDir) {
  *
  * @param {string} filePath - 文件路径
  * @returns {string} - 文件内容
+ * @throws {Error} - 如果文件不存在或无法读取
  */
 function readFileContent(filePath) {
-  if (fs.existsSync(filePath)) {
-    return fs.readFileSync(filePath, "utf-8");
+  try {
+    if (fs.existsSync(filePath)) {
+      return fs.readFileSync(filePath, "utf-8");
+    }
+    throw new Error(`File not found: ${filePath}`);
+  } catch (error) {
+    console.error(`Error reading file ${filePath}:`, error);
+    throw error;
   }
-  throw new Error(`File not found: ${filePath}`);
 }
 
+/**
+ * 合并两个Map对象
+ *
+ * @param {Map} map1 - 第一个Map
+ * @param {Map} map2 - 第二个Map
+ * @returns {Map} - 合并后的Map
+ */
 function mergeMaps(map1, map2) {
-  const mergedMap = new Map();
-  // 遍历第一个Map对象
-  for (const [key, value] of map1) {
-    // 如果mergedMap中已经有该键,则将值合并为数组
-    if (mergedMap.has(key)) {
-      const existingValue = mergedMap.get(key);
-      if (Array.isArray(existingValue)) {
-        mergedMap.set(key, [...existingValue, value]);
-      } else {
-        mergedMap.set(key, [existingValue, value]);
-      }
-    } else {
-      // 否则直接添加键值对
-      mergedMap.set(key, value);
-    }
-  }
+  const mergedMap = new Map(map1);
 
   // 遍历第二个Map对象
   for (const [key, value] of map2) {
-    // 如果mergedMap中已经有该键,则将值合并为数组
     if (mergedMap.has(key)) {
       const existingValue = mergedMap.get(key);
-      if (Array.isArray(existingValue)) {
-        mergedMap.set(key, [...existingValue, value]);
-      } else {
-        mergedMap.set(key, [existingValue, value]);
-      }
+      mergedMap.set(
+        key,
+        Array.isArray(existingValue)
+          ? [...existingValue, ...(Array.isArray(value) ? value : [value])]
+          : [existingValue, ...(Array.isArray(value) ? value : [value])],
+      );
     } else {
-      // 否则直接添加键值对
       mergedMap.set(key, value);
     }
   }
@@ -446,152 +375,191 @@ function mergeMaps(map1, map2) {
   return mergedMap;
 }
 
-const exportFileMap = new Map();
-
 /**
  * 从指定文件中获取所有导出节点
  * @param {string} sourceFilePath - 源文件路径
- * @returns {void}
+ * @returns {Map} - 导出节点映射
  */
 function getAllExportNode(sourceFilePath) {
-  if (exportFileMap.has(sourceFilePath)) {
-    return exportFileMap.get(sourceFilePath);
-  }
-
-  const baseDir = path.dirname(sourceFilePath);
-  const code = readFileContent(sourceFilePath);
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__getAllExportNode.ts", code);
-
-  const typeChecker = project.getTypeChecker();
-
-  let allExportMap = new Map();
-  function addExportMap(key, val) {
-    if (allExportMap.has(key)) {
-      allExportMap.set(key, [...allExportMap.get(key), val]);
-    } else {
-      allExportMap.set(key, toArray(val));
+  try {
+    if (exportFileMap.has(sourceFilePath)) {
+      return exportFileMap.get(sourceFilePath);
     }
-  }
 
-  // 获取export声明变量
-  const exportNodes = typeChecker.getSymbolsInScope(sourceFile, SymbolFlags.ExportValue);
-  exportNodes.forEach((node) => {
-    addExportMap(sourceFilePath, node.getName());
-  });
+    const baseDir = path.dirname(sourceFilePath);
+    const code = readFileContent(sourceFilePath);
+    const project = new Project();
+    const sourceFile = project.createSourceFile("__getAllExportNode.ts", code);
 
-  // 获取所有ExportDeclaration类型的节点
-  const exports = sourceFile.getDescendantsOfKind(SyntaxKind.ExportDeclaration);
+    const typeChecker = project.getTypeChecker();
 
-  exports.forEach((exportNode) => {
-    const namedExports = exportNode.getNamedExports();
-    const namespaceExport = exportNode.getNamespaceExport();
-    if (isHasArray(namedExports)) {
-      addExportMap(
-        sourceFilePath,
-        namedExports.map((node) => node.getName()),
-      );
-    } else if (namespaceExport) {
-      addExportMap(sourceFilePath, namespaceExport.getName());
-    } else {
-      const exportRelatedPath = exportNode.getModuleSpecifier()?.getText().replace(/['"]/g, "");
-      const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
-      if (resolvedPath) {
-        allExportMap = mergeMaps(allExportMap, getAllExportNode(resolvedPath));
+    let allExportMap = new Map();
+    function addExportMap(key, val) {
+      if (allExportMap.has(key)) {
+        const existing = allExportMap.get(key);
+        allExportMap.set(key, [...existing, ...(Array.isArray(val) ? val : [val])]);
+      } else {
+        allExportMap.set(key, toArray(val));
       }
     }
-  });
 
-  exportFileMap.set(sourceFilePath, allExportMap);
-  return allExportMap;
+    // 获取所有带有export关键字的节点
+    sourceFile.getDescendantsOfKind(SyntaxKind.ExportKeyword).forEach((exportKeywordNode) => {
+      const parent = exportKeywordNode.getParent();
+      let name = parent.getName?.() ?? null;
+      if (name) addExportMap(sourceFilePath, name);
+    });
+
+    // 获取export声明变量
+    const exportNodes = typeChecker.getSymbolsInScope(sourceFile, SymbolFlags.ExportValue);
+    exportNodes.forEach((node) => {
+      addExportMap(sourceFilePath, node.getName());
+    });
+
+    // 获取所有ExportDeclaration类型的节点
+    const exports = sourceFile.getDescendantsOfKind(SyntaxKind.ExportDeclaration);
+
+    exports.forEach((exportNode) => {
+      const namedExports = exportNode.getNamedExports();
+      const namespaceExport = exportNode.getNamespaceExport();
+
+      if (isHasArray(namedExports)) {
+        addExportMap(
+          sourceFilePath,
+          namedExports.map((node) => node.getName()),
+        );
+      } else if (namespaceExport) {
+        addExportMap(sourceFilePath, namespaceExport.getName());
+      } else {
+        const exportRelatedPath = exportNode.getModuleSpecifier()?.getText().replace(/['"]/g, "");
+        const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+        if (resolvedPath) {
+          allExportMap = mergeMaps(allExportMap, getAllExportNode(resolvedPath));
+        }
+      }
+    });
+
+    exportFileMap.set(sourceFilePath, allExportMap);
+    return allExportMap;
+  } catch (error) {
+    console.error(`Error in getAllExportNode for ${sourceFilePath}:`, error);
+    return new Map();
+  }
 }
 
-const dirname = fileURLToPath(new URL(".", import.meta.url));
-const ROOT_PATH = resolve(dirname, "..");
-
 /**
- * 获取外部变量的源代码
+ * 提取代码中使用的代码
  *
  * @param {string} filePath - 文件路径
  * @param {string[]} externalVariables - 外部变量数组
- * @returns {string} - 外部变量的源代码
+ * @returns {string} - 提取的代码
  */
 export function extractUsedCode(filePath, externalVariables) {
-  const baseDir = path.dirname(filePath);
-  const code = readFileContent(filePath);
-  const project = new Project();
-  const sourceFile = project.createSourceFile("__extractUsedCode.ts", code);
+  try {
+    if (!fs.existsSync(filePath)) {
+      console.error(`File not found: ${filePath}`);
+      return "";
+    }
 
-  let noHandleVariableList = [];
+    if (!Array.isArray(externalVariables) || externalVariables.length === 0) {
+      return "";
+    }
 
-  const externalSources = [];
+    const baseDir = path.dirname(filePath);
+    const code = readFileContent(filePath);
+    const project = new Project();
+    const sourceFile = project.createSourceFile("__extractUsedCode.ts", code);
 
-  // 遍历外部变量数组
-  for (const variable of externalVariables) {
-    if (isTargetInOptions(variable, noHandleVariableList)) continue;
+    let noHandleVariableList = [];
+    const externalSources = [];
 
-    const identifierNodeMap = sourceFile
-      .getDescendantsOfKind(SyntaxKind.Identifier)
-      .filter((node) => {
+    // 遍历外部变量数组
+    for (const variable of externalVariables) {
+      if (!variable || isTargetInOptions(variable, noHandleVariableList)) continue;
+
+      const identifierNodes = sourceFile.getDescendantsOfKind(SyntaxKind.Identifier).filter((node) => {
         return node.getText() === variable && !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression);
-      })
-      .reduce((prev, cur) => {
+      });
+
+      const identifierNodeMap = identifierNodes.reduce((prev, cur) => {
         return {
           ...prev,
           [cur.getText()]: cur,
         };
       }, {});
 
-    for (const [key, identifierNode] of Object.entries(identifierNodeMap)) {
-      const declaration = identifierNode.getDefinitionNodes()[0];
+      for (const [key, identifierNode] of Object.entries(identifierNodeMap)) {
+        const definitionNodes = identifierNode.getDefinitionNodes();
+        if (!definitionNodes || definitionNodes.length === 0) continue;
 
-      if (declaration) {
-        let text = "";
-        const importDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
-        const varDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.VariableStatement);
-        if (varDeclaration) {
-          text = varDeclaration.getFullText();
-        } else if (importDeclaration) {
-          const exportRelatedPath = importDeclaration.getModuleSpecifier()?.getText().replace(/['"]/g, "");
-          const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+        const declaration = definitionNodes[0];
 
-          // 处理外部模块
-          if (!resolvedPath) {
-            const importClauses = getImportClauseNameList(importDeclaration);
-            noHandleVariableList = [...noHandleVariableList, ...getArrayIntersection(externalVariables, importClauses)];
-            text = importDeclaration.getFullText();
-          } else {
-            const exportsMap = getAllExportNode(resolvedPath);
+        if (declaration) {
+          let text = "";
+          const importDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.ImportDeclaration);
+          const varDeclaration = declaration.getFirstAncestorByKind(SyntaxKind.VariableStatement);
 
-            let targetPath = "";
-            for (const [key, val] of exportsMap) {
-              const target = val.find((item) => item === declaration.getText());
-              if (target) {
-                targetPath = key;
+          if (varDeclaration) {
+            text = varDeclaration.getFullText();
+          } else if (importDeclaration) {
+            const exportRelatedPath = importDeclaration.getModuleSpecifier()?.getText().replace(/['"]/g, "");
+            const resolvedPath = resolveImportPath(exportRelatedPath, baseDir);
+
+            // 处理外部模块
+            if (!resolvedPath) {
+              const importClauses = getImportClauseNameList(importDeclaration);
+              noHandleVariableList = [
+                ...noHandleVariableList,
+                ...getArrayIntersection(externalVariables, importClauses),
+              ];
+              text = importDeclaration.getFullText();
+            } else {
+              const exportsMap = getAllExportNode(resolvedPath);
+
+              let targetPath = "";
+              for (const [key, val] of exportsMap) {
+                const target = val.find((item) => item === declaration.getText());
+                if (target) {
+                  targetPath = key;
+                  break;
+                }
+              }
+
+              if (targetPath) {
+                text = extractUsedCode(targetPath, [declaration.getText()]);
               }
             }
-            text = extractUsedCode(targetPath, [declaration.getText()]);
+          } else {
+            text = declaration.getFullText();
           }
-        } else {
-          text = declaration.getFullText();
+
+          text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
+          if (text) {
+            externalSources.push(text);
+          }
         }
-        text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
-        externalSources.push(text);
       }
     }
+
+    let text = externalSources.join(`\n`);
+    const externals = getExternalVariables(text);
+
+    // 避免无限递归，检查新的外部变量是否已经处理过
+    if (externals.length && getArrayIntersection(lastExternals, externals).length !== externals.length) {
+      const newExternals = [...externals];
+      lastExternals = newExternals;
+      const newExternalSources = extractUsedCode(filePath, newExternals);
+      lastExternals = [];
+      if (newExternalSources) {
+        externalSources.unshift(newExternalSources);
+      }
+    }
+
+    return externalSources.join("\n\n");
+  } catch (error) {
+    console.error(`Error in extractUsedCode for ${filePath}:`, error);
+    return "";
   }
-
-  let text = externalSources.join(`\n`);
-  const externals = getExternalVariables(text);
-
-  if (externals.length && getArrayIntersection(lastExternals, externals).length !== externals.length) {
-    lastExternals = [...externals];
-    const newExternals = extractUsedCode(filePath, externals);
-    lastExternals = [];
-    externalSources.unshift(newExternals);
-  }
-
-  return externalSources.join("\n\n");
 }
 
 export default extractUsedCode;

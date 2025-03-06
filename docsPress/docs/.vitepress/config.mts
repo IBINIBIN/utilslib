@@ -10,6 +10,7 @@ export default defineConfig({
   base: "/vitepress",
   outDir: "../../docs/vitepress",
   vite: {},
+  ignoreDeadLinks: true,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     search: {

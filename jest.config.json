@@ -1,0 +1,27 @@
+{
+  "clearMocks": true,
+  "collectCoverage": true,
+  "collectCoverageFrom": [
+    "<rootDir>/packages/*/src/**/*.{ts,tsx}",
+    "!<rootDir>/packages/*/src/**/*.d.ts"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageProvider": "v8",
+  "preset": "ts-jest/presets/js-with-ts-esm",
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        "useESM": true
+      }
+    ]
+  },
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "extensionsToTreatAsEsm": [".ts"],
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  },
+  "testMatch": ["<rootDir>/packages/**/__tests__/**/*.test.{ts,tsx}"],
+  "roots": ["<rootDir>/packages"]
+} 

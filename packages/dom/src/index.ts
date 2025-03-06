@@ -1,4 +1,4 @@
-import { isHasObject, toArray } from "@utilslib/core";
+import { isNonEmptyObject, toArray } from "@utilslib/core";
 export * from "./dom";
 export * from "./clipboard";
 export * from "./easing";
@@ -165,7 +165,7 @@ export function loadJS(
         scriptElement.src = file;
 
         // 添加自定义属性
-        if (isHasObject(config)) {
+        if (isNonEmptyObject(config)) {
           Object.entries(config).forEach(([key, val]) => {
             scriptElement.setAttribute(key, String(val));
           });
