@@ -4,19 +4,21 @@
   // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-  {
-    "name": "build:doc-config",
-    "request": "launch",
-    "runtimeArgs": [
-      "run-script",
-      "build:doc-config"
-    ],
-    "runtimeExecutable": "npm",
-    "skipFiles": [
-      "<node_internals>/**"
-    ],
-    "type": "node"
-  },
+    {
+      "name": "buildVscodeSnippetsJson",
+      "program": "${workspaceFolder}/build/buildVscodeSnippetsJson.js",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "build:doc-config",
+      "request": "launch",
+      "runtimeArgs": ["run-script", "build:doc-config"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
     {
       "name": "docBuild",
       "program": "${workspaceFolder}/build/docBuild.js",

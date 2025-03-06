@@ -1,78 +1,37 @@
 /*======================================  findNodeByDFS -- start  ======================================*/
 
-interface NodeProps<T extends Record<string, any>> {
-  arr: T[];
-  compareAttr: string;
-  nextLevelAttr: string;
-  value: unknown;
-  layerNodeList?: T[];
-  layerIndexList?: number[];
-}
-
-interface TargetData<T> {
-  target: T;
-  parent: T | undefined;
-  layerIndexList: number[];
-  layerNodeList: T[];
-}
-
-function findNode<T extends Record<string, any>>({
-  arr,
-  compareAttr,
-  nextLevelAttr,
-  value,
-  layerNodeList = [],
-  layerIndexList = [],
-}: NodeProps<T>): TargetData<T> | undefined {
-  for (let i = 0; i < arr.length; i++) {
-    const data = arr[i];
-
-    if (data[compareAttr] === value) {
-      const [parent] = layerNodeList.slice(-1);
-      return {
-        target: data,
-        layerIndexList: [...layerIndexList, i],
-        layerNodeList: [...layerNodeList, data],
-        parent,
-      };
-    }
-
-    const nextLevelList = data[nextLevelAttr];
-    if (Array.isArray(nextLevelList) && nextLevelList.length) {
-      const result = findNode({
-        arr: nextLevelList,
-        compareAttr,
-        nextLevelAttr,
-        value,
-        layerNodeList: [...layerNodeList, data],
-        layerIndexList: [...layerIndexList, i],
-      });
-      if (result) {
-        return result;
-      }
-    }
-  }
-
-  return undefined;
-}
+import { type ParentInfo, walkTree } from "./recursion";
 
 /**
  * 使用深度优先搜索算法递归查找指定属性值的节点，并返回匹配节点的数据、父级数据列表和层级关系。
  *
- * @type {<T extends Record<string, any>>(arr: T[], compareAttr: string, nextLevelAttr: string, value: unknown) => TargetData<T> | undefined}
+ * @type {<T extends Record<string, any>>(arr: T[], compareAttr: string, nextLevelAttr: string, value: unknown) => { target: T; parent: T | undefined; ancestors: ParentInfo<T>[]; } | undefined}
  * @param {T[]} arr - 要进行搜索的数组。
  * @param {string} compareAttr - 需要查找的属性名。
  * @param {string} nextLevelAttr - 子级循环字段
  * @param {unknown} value - 需要查找的属性值。
- * @returns {TargetData<T> | undefined} 匹配节点的数据、父级数据列表和层级关系。
+ * @returns {{ target: T; parent: T | undefined; ancestors: ParentInfo<T>[]; } | undefined} 匹配节点的数据、父级数据列表和层级关系。
  */
 export function findNodeByDFS<T extends Record<string, any>>(
-  arr: NodeProps<T>["arr"],
-  compareAttr: NodeProps<T>["compareAttr"],
-  nextLevelAttr: NodeProps<T>["nextLevelAttr"],
-  value: NodeProps<T>["value"],
+  arr: T[],
+  compareAttr: string,
+  nextLevelAttr: string,
+  value: unknown,
 ) {
-  return findNode<T>({ arr, compareAttr, nextLevelAttr, value });
+  let result: { target: T; parent: T | undefined; ancestors: ParentInfo<T>[] } | undefined;
+  walkTree(arr, nextLevelAttr, (node, context, breakLoop) => {
+    const { parent, ancestors } = context;
+
+    if (node[compareAttr] === value) {
+      result = {
+        target: node,
+        ancestors,
+        parent,
+      };
+      breakLoop();
+    }
+  });
+  return result;
 }
 
 /*---------------------------------------  findNodeByDFS -- end  ---------------------------------------*/
@@ -107,20 +66,15 @@ export function flattenTreeArray<
   ID extends keyof T,
   R = T & { level: number; parentId: T[ID] },
 >(arr: T[], childrenProperty: P, idAttr: ID, includeParent: boolean = true): R[] {
-  function flattenRecursive(nodes: T[], level: number, parentId: T[ID] | undefined): R[] {
-    return nodes.reduce((prev: R[], node: T) => {
-      const children: T[P] = node[childrenProperty];
-      const id: T[ID] = node[idAttr];
-      const flattenedNode: R = Object.assign(node, { level, parentId });
+  const result: R[] = [];
+  walkTree(arr, childrenProperty, (node, context) => {
+    const { level, leaf, parent } = context;
+    const data = node;
 
-      let childrenArray: R[] = [flattenedNode];
-      if (Array.isArray(children)) {
-        childrenArray = flattenRecursive(children, level + 1, id).concat(includeParent ? flattenedNode : []);
-      }
+    if (leaf || includeParent) {
+      result.push(Object.assign(data, { level, parentId: parent?.[idAttr] }));
+    }
+  });
 
-      return prev.concat(childrenArray);
-    }, []);
-  }
-
-  return flattenRecursive(arr, 0, undefined);
+  return result;
 }

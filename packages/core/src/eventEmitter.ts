@@ -72,7 +72,10 @@ export class EventEmitter<T extends string> {
     const callbacks = this.events.get(eventName);
     if (!callbacks) return;
 
-    callbacks.forEach((callback) => {
+    // 创建回调函数数组的副本，防止回调函数中的操作影响遍历
+    const callbacksCopy = [...callbacks];
+
+    callbacksCopy.forEach((callback) => {
       try {
         callback(...args);
       } catch (error) {

@@ -52,3 +52,14 @@ export async function catchError<F extends AnyFunction, R = UnpackPromise<Return
     return [err, data, errMsg];
   }
 }
+
+/**
+ * 创建一个可取消的倒计时执行器
+ * @param {Function} callback - 倒计时结束后执行的回调函数
+ * @param {number} delay - 倒计时时间（毫秒）
+ * @returns {Function} - 返回一个取消函数
+ */
+export const createCancelableTimer = (callback: AnyFunction, delay: number) => {
+  const id = setTimeout(callback, delay);
+  return () => clearTimeout(id);
+};

@@ -21,15 +21,7 @@ export function clampNumberWithinRange(numberToClamp: number, range: [number, nu
  * const resultArray = toArray(["value1", "value2"]); // ['value1', 'value2']
  */
 export function toArray<T>(value: T | T[]): T[] {
-  let list: T[];
-
-  if (Array.isArray(value)) {
-    list = value;
-  } else {
-    list = [value];
-  }
-
-  return list;
+  return Array.isArray(value) ? value : [value];
 }
 
 type OnlyObject = {

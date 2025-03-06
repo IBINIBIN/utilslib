@@ -6,6 +6,7 @@ doc
 out
 .vscode-test/
 *.vsix
+coverage
 
 docsPress/docs/@utilslib
 docsPress/.vitepress/dist

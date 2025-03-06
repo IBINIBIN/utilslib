@@ -33,7 +33,11 @@
     "moduleResolution": "bundler",                     /* Specify how TypeScript looks up a file from a given module specifier. */
     "baseUrl": ".",                                  /* Specify the base directory to resolve non-relative module names. */
     "paths": {
-      "@utilslib/core":["packages/core/src"],
+      "@utilslib/types": ["packages/types/src"],
+      "@utilslib/core": ["packages/core/src"],
+      "@utilslib/dom": ["packages/dom/src"],
+      "@utilslib/vue2": ["packages/vue2/src"],
+      "@utilslib/vue3": ["packages/vue3/src"],
     },                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */

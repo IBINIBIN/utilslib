@@ -1,4 +1,4 @@
-import { isEmptyString, isHasString, isString } from "./is";
+import { isEmptyString, isNonEmptyString, isString } from "./is";
 
 /**
  * 生成指定长度的随机字符串。
@@ -21,15 +21,37 @@ export function createRandomString(length: number = 8): string {
   return randomString;
 }
 
+// /**
+//  * 从文件路径中提取文件名。
+//  *
+//  * @param {string} path - 包含文件名的路径。
+//  * @returns {string} 提取出的文件名。
+//  */
+// export function getBasename(path: string): string {
+//   const match = path.match(/\/([^\/]+)$/);
+//   return match ? match[1] : path;
+// }
+
 /**
- * 从文件路径中提取文件名。
+ * 从文件路径中提取文件名，可选择去除扩展名。
  *
  * @param {string} path - 包含文件名的路径。
+ * @param {string} [ext] - 可选的扩展名，如果提供且文件名以该扩展名结尾，则会从结果中移除。
  * @returns {string} 提取出的文件名。
+ * @example
+ * ```ts
+ * basename('/path/to/file.txt') // => "file.txt"
+ * basename('/path/to/file.txt', '.txt') // => "file"
+ * ```
  */
-export function getBasename(path: string): string {
-  const match = path.match(/\/([^\/]+)$/);
-  return match ? match[1] : path;
+export function getBasename(path: string, ext?: string): string {
+  if (!path || typeof path !== "string") return "";
+  const filename =
+    path
+      .replace(/[\/\\]+$/, "")
+      .split(/[\/\\]/)
+      .pop() || "";
+  return ext && filename.endsWith(ext) ? filename.slice(0, -ext.length) : filename;
 }
 
 /**
@@ -54,6 +76,10 @@ export function getFileName<T>(fileName: string): string | "" {
  * @returns {string | ""} 文件名的后缀。
  */
 export const getFileExtension = (filename: string): string | "" => {
+  // 处理以点开头的特殊文件名（如.gitignore）
+  if (filename.startsWith(".") && filename.indexOf(".", 1) === -1) {
+    return filename.substring(1);
+  }
   return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
 };
 
