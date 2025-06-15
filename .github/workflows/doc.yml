@@ -25,9 +25,9 @@ jobs:
           pnpm i
           pnpm build:integration
       - name: upload production artifacts
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: ./docs
       - name: Deploy doc to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
