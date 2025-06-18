@@ -1,4 +1,4 @@
-name: publish Doc
+name: 发布utilslib文档
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   build:
+    name: 构建并发布utilslib文档
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
