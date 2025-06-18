@@ -1,3 +1,4 @@
+import { AnyFunction } from "@utilslib/types";
 import { toArray } from "./array";
 
 /**
@@ -17,11 +18,6 @@ type DependencyStatus = Record<string, boolean>;
  * 异步函数类型
  */
 type AsyncFunction<T extends any[] = any[], R = any> = (...args: T) => Promise<R>;
-
-/**
- * 同步或异步函数类型
- */
-type AnyFunction<T extends any[] = any[], R = any> = (...args: T) => R | Promise<R>;
 
 /**
  * 函数包装式依赖管理器
@@ -61,7 +57,7 @@ export class DependencyManager {
    * @template T - 函数参数类型数组
    * @template R - 函数返回值类型
    * @param {string} depName - 依赖名称，用于标识该依赖
-   * @param {AnyFunction<T, R>} fn - 要包装的原始函数
+   * @param {AnyFunction} fn - 要包装的原始函数
    * @returns {AsyncFunction<T, R>} 包装后的异步函数，执行完成后会自动标记依赖完成
    *
    * @example
@@ -72,7 +68,7 @@ export class DependencyManager {
    * });
    * ```
    */
-  wrap<T extends any[] = any[], R = any>(depName: string, fn: AnyFunction<T, R>): AsyncFunction<T, R> {
+  wrap<T extends any[] = any[], R = any>(depName: string, fn: AnyFunction): AsyncFunction<T, R> {
     this._register(depName);
 
     return async (...args: T): Promise<R> => {
@@ -93,7 +89,7 @@ export class DependencyManager {
    * @template T - 函数参数类型数组
    * @template R - 函数返回值类型
    * @param {string | string[]} requiredDeps - 需要等待的依赖名称或依赖名称数组
-   * @param {AnyFunction<T, R>} fn - 要包装的原始函数
+   * @param {AnyFunction} fn - 要包装的原始函数
    * @param {DependencyOptions} [options={}] - 配置选项
    * @returns {AsyncFunction<T, R>} 包装后的异步函数，会在依赖满足后执行
    *
@@ -106,7 +102,7 @@ export class DependencyManager {
    */
   require<T extends any[] = any[], R = any>(
     requiredDeps: string | string[],
-    fn: AnyFunction<T, R>,
+    fn: AnyFunction,
     options: DependencyOptions = {},
   ): AsyncFunction<T, R> {
     const deps = toArray(requiredDeps);

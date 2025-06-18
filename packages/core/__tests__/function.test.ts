@@ -1,11 +1,11 @@
 /// <reference types="jest" />
 
-import { noop, once, catchError, createCancelableTimer } from "../src/function.js";
+import { NOOP, once, catchError, createCancelableTimer } from "../src/function.js";
 
 describe("function.ts 测试", () => {
-  describe("noop", () => {
-    test("noop函数不应返回任何值", () => {
-      expect(noop()).toBeUndefined();
+  describe("NOOP", () => {
+    test("NOOP函数不应返回任何值", () => {
+      expect(NOOP()).toBeUndefined();
     });
   });
 
