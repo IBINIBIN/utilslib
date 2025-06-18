@@ -1,0 +1,98 @@
+name: 检查版本并发布已更新npm包
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions: write-all
+
+env:
+  npm_org: \@utilslib
+
+jobs:
+  checkPackageVersion:
+    name: 检查package是否需要更新
+    outputs:
+      need_update_list: ${{ steps.check-package-version.outputs.need_update_list }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        run: sudo apt update && sudo apt install -y jq
+
+      - name: 检查packages目录
+        id: check-package-version
+        run: |
+          version_compare() { [ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$1" ] && [ "$1" != "$2" ]; }
+
+          need_update_list=()
+
+          for dir in packages/*; do
+              if [ ! -d "$dir" ]; then
+                  echo "📁❌ $dir"
+                  continue
+              fi
+
+              if [ ! -f $dir/package.json ]; then
+                  echo "❌📃 $dir/package.json"
+                  continue
+              fi
+
+              package_name=$(basename "$dir")
+              current_version=$(cat $dir/package.json | jq -r .version)
+              latest_version=$(npm view ${{ env.npm_org }}/$package_name version 2>/dev/null || echo "0.0.0")
+
+              if ! version_compare  $latest_version $current_version; then
+                  echo "❌ $package_name latest: $latest_version current: $current_version "
+                  continue
+              fi
+
+              echo "✅ $package_name latest: $latest_version current: $current_version "
+              need_update_list+=($package_name)
+          done
+          echo 以下包需要更新: ${need_update_list[*]}
+          echo "need_update_list=${need_update_list[*]}" >> $GITHUB_OUTPUT
+
+  release:
+    name: 发布已更新npm包
+    runs-on: ubuntu-latest
+    needs: checkPackageVersion
+    if: needs.checkPackageVersion.outputs.need_update_list != ''
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js >=v16
+        uses: actions/setup-node@v3
+        with:
+          node-version: ">=16"
+          cache: "pnpm"
+      - run: |
+          pnpm i
+          pnpm build
+
+      - name: Authenticate with NPM
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: 更新包
+        run: |
+          for package_name in ${{ needs.checkPackageVersion.outputs.need_update_list }}; do
+            pnpm --filter ${{ env.npm_org }}/$package_name  publish --no-git-checks --access public
+          done
+
+  trigger:
+    name: 触发fe-integration vsce发布更新和utilslib 文档更新
+    runs-on: ubuntu-latest
+    needs: [release, checkPackageVersion]
+    if: needs.checkPackageVersion.outputs.need_update_list != ''
+    steps:
+      - name: 触发fe-integration vsce发布更新
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.SECRETS_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository_owner }}/fe-integration/actions/workflows/triggerVersionUpgrade.yml/dispatches" -d '{"ref":"${{github.ref_name}}"}'
+
+      - name: 触发utilslib 文档更新
+        run: |
+          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/doc.yml/dispatches" -d '{"ref":"${{github.ref_name}}"}'
