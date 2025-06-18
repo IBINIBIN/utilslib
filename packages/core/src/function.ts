@@ -1,6 +1,9 @@
 import { AnyFunction } from "@utilslib/types";
 
-export const noop = () => {};
+/**
+ * 空函数，用于占位符，不执行任何操作
+ */
+export const NOOP = () => {};
 
 /**
  * 确保传入的方法只能被执行一次
