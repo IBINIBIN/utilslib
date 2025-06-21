@@ -7,3 +7,4 @@ export * from "./common";
 export * from "./constants";
 export * from "./recursion";
 export * from "./dependencyManager";
+export * from "./eventEmitter";
