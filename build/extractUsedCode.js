@@ -478,7 +478,11 @@ export function extractUsedCode(filePath, externalVariables) {
       if (!variable || isTargetInOptions(variable, noHandleVariableList)) continue;
 
       const identifierNodes = sourceFile.getDescendantsOfKind(SyntaxKind.Identifier).filter((node) => {
-        return node.getText() === variable && !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression);
+        return (
+          node.getText() === variable &&
+          !node.getFirstAncestorByKind(SyntaxKind.PropertyAccessExpression) &&
+          !node.getParentIfKind(SyntaxKind.MethodDeclaration)
+        );
       });
 
       const identifierNodeMap = identifierNodes.reduce((prev, cur) => {
