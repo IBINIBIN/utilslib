@@ -296,18 +296,52 @@ export function isNonEmptyArray(value: unknown): value is any[] {
 }
 
 /**
- * 检查指定目标是否在选项中（选项可以是单个对象或对象数组）。
+ * 检查指定目标是否在选项中（可以是单个字符串或字符串数组）。
  *
  * @param {T} target - 目标项。
- * @param {(T | T[])[]} options - 选项，可以是单个对象或对象数组。
+ * @param {(T | T[])[]} options - 选项，可以是单个字符串或字符串数组。
  * @returns {boolean} 若目标项在选项中，则返回 true；否则返回 false。
  */
 export function isTargetInOptions<T>(target: T, ...options: (T | T[])[]): boolean {
   return options.some((option) => {
     if (Array.isArray(option)) {
-      return option.some((item) => item === target);
+      return option.some((item) => target === item);
     }
-    return option === target;
+    return target === option;
+  });
+}
+
+/**
+ * 检查指定目标是否包含选项中的任一内容（选项可以是单个字符串或字符串数组）。
+ * 使用 includes 方法进行部分匹配检查。
+ *
+ * @param {string} target - 目标字符串。
+ * @param {(string | string[])[]} options - 选项，可以是单个字符串或字符串数组。
+ * @returns {boolean} 若目标字符串包含任一选项内容，则返回 true；否则返回 false。
+ */
+export function isTargetIncludingOptions<T extends string>(target: T, ...options: (T | T[])[]): boolean {
+  return options.some((option) => {
+    if (Array.isArray(option)) {
+      return option.some((item) => target.includes(item));
+    }
+    return target.includes(option);
+  });
+}
+
+/**
+ * 检查选项中是否有任一内容包含指定目标（选项可以是单个字符串或字符串数组）。
+ * 使用 includes 方法进行部分匹配检查。
+ *
+ * @param {string} target - 目标字符串。
+ * @param {(string | string[])[]} options - 选项，可以是单个字符串或字符串数组。
+ * @returns {boolean} 若任一选项内容包含目标字符串，则返回 true；否则返回 false。
+ */
+export function isTargetIncludedInOptions<T extends string>(target: T, ...options: (T | T[])[]): boolean {
+  return options.some((option) => {
+    if (Array.isArray(option)) {
+      return option.some((item) => item.includes(target));
+    }
+    return option.includes(target);
   });
 }
 
