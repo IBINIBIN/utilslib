@@ -18,7 +18,7 @@ export class StateStore<T extends Record<string, any> = Record<string, any>> {
    * @param {keyof T} key - 状态键名
    * @param {T[keyof T]} value - 状态值
    */
-  setState<K extends keyof T>(key: K, value: T[K]): void {
+  set<K extends keyof T>(key: K, value: T[K]): void {
     this.state[key] = value;
     this.eventEmitter.emit(key as string, value);
   }
@@ -28,7 +28,7 @@ export class StateStore<T extends Record<string, any> = Record<string, any>> {
    * @param {keyof T | undefined} key - 状态键名，不传则返回整个状态对象
    * @returns {T[keyof T] | T} 对应键的状态值或整个状态对象
    */
-  getState<K extends keyof T>(key?: K): T[K] | T {
+  get<K extends keyof T>(key?: K): T[K] | T {
     return key ? this.state[key] : this.state;
   }
 
