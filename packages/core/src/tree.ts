@@ -1,5 +1,5 @@
 import { toArray } from "./array";
-import { isNonEmptyArray } from "./is";
+import { isNonEmptyArray } from "./types";
 
 /**
  * 父节点信息接口

@@ -1,4 +1,4 @@
-import { EventEmitter } from "@utilslib/core";
+import { EventEmitter } from "./eventEmitter";
 
 /*
  * 状态管理存储类

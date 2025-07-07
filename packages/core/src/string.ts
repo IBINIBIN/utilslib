@@ -1,4 +1,4 @@
-import { isEmptyString, isNonEmptyString, isString } from "./is";
+import { isEmptyString, isNonEmptyString, isString } from "./types";
 
 /**
  * 生成指定长度的随机字符串。

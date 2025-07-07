@@ -1,6 +1,6 @@
 /*======================================  findNodeByDFS -- start  ======================================*/
 
-import { type ParentInfo, walkTree } from "./recursion";
+import { type ParentInfo, walkTree } from "./tree";
 
 /**
  * 使用深度优先搜索算法递归查找指定属性值的节点，并返回匹配节点的数据、父级数据列表和层级关系。
