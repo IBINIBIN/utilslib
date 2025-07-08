@@ -62,7 +62,12 @@ export async function catchError<F extends AnyFunction, R = UnpackPromise<Return
  * @param {number} delay - 倒计时时间（毫秒）
  * @returns {Function} - 返回一个取消函数
  */
-export function createCancelableTimer(callback: AnyFunction, delay: number) {
-  const timer = setTimeout(callback, delay);
-  return () => clearTimeout(timer);
+export function createCancelableTimer(callback: AnyFunction, delay: number, onCancel: AnyFunction = NOOP) {
+  let timer: number | null = setTimeout(callback, delay);
+  return () => {
+    if (!timer) return;
+    clearTimeout(timer);
+    timer = null;
+    onCancel();
+  };
 }
