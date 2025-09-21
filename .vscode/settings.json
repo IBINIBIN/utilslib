@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "liveServer.settings.port": 5501
+  "liveServer.settings.port": 5501,
+  "commentTranslate.hover.enabled": false
   // "editor.formatOnSave": true
 }

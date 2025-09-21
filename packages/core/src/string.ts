@@ -1,4 +1,5 @@
-import { isEmptyString, isNonEmptyString, isString } from "./types";
+import { isString } from "./type";
+import { isEmptyString } from "./validator";
 
 /**
  * 生成指定长度的随机字符串。
@@ -19,120 +20,6 @@ export function createRandomString(length: number = 8): string {
   }
 
   return randomString;
-}
-
-// /**
-//  * 从文件路径中提取文件名。
-//  *
-//  * @param {string} path - 包含文件名的路径。
-//  * @returns {string} 提取出的文件名。
-//  */
-// export function getBasename(path: string): string {
-//   const match = path.match(/\/([^\/]+)$/);
-//   return match ? match[1] : path;
-// }
-
-/**
- * 从文件路径中提取文件名，可选择去除扩展名。
- *
- * @param {string} path - 包含文件名的路径。
- * @param {string} [ext] - 可选的扩展名，如果提供且文件名以该扩展名结尾，则会从结果中移除。
- * @returns {string} 提取出的文件名。
- * @example
- * ```ts
- * basename('/path/to/file.txt') // => "file.txt"
- * basename('/path/to/file.txt', '.txt') // => "file"
- * ```
- */
-export function getBasename(path: string, ext?: string): string {
-  if (!path || typeof path !== "string") return "";
-  const filename =
-    path
-      .replace(/[\/\\]+$/, "")
-      .split(/[\/\\]/)
-      .pop() || "";
-  return ext && filename.endsWith(ext) ? filename.slice(0, -ext.length) : filename;
-}
-
-/**
- * 获取文件名（不包含扩展名）。
- *
- * @param {string} fileName - 文件名。
- * @returns {string | ""} 提取的文件名。
- */
-export function getFileName<T>(fileName: string): string | "" {
-  const name = getBasename(fileName);
-  const lastDotIndex = name.lastIndexOf(".");
-  if (lastDotIndex === -1) {
-    return name;
-  }
-  return name.slice(0, lastDotIndex);
-}
-
-/**
- * 获取文件名的后缀。
- *
- * @param {string} filename - 文件名。
- * @returns {string | ""} 文件名的后缀。
- */
-export const getFileExtension = (filename: string): string | "" => {
-  // 处理以点开头的特殊文件名（如.gitignore）
-  if (filename.startsWith(".") && filename.indexOf(".", 1) === -1) {
-    return filename.substring(1);
-  }
-  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
-};
-
-/**
- * 格式化价格，添加千位分隔符并保留指定的小数位数。
- *
- * @param {string | number} value - 要格式化的价格。
- * @param {number} decimalPlaces - 可选的小数位数，默认为不处理小数位数。
- * @returns {string} 格式化后的价格。
- */
-export function formatPrice(value: string | number, decimalPlaces: number = -1): string {
-  const numberValue = typeof value === "number" ? value : parseFloat(value);
-  if (isNaN(numberValue)) {
-    return value.toString();
-  }
-
-  const options = {
-    minimumFractionDigits: decimalPlaces >= 0 ? decimalPlaces : 0,
-    maximumFractionDigits: decimalPlaces >= 0 ? decimalPlaces : 2,
-  };
-
-  return numberValue.toLocaleString(undefined, options);
-}
-
-/**
- * 将数字转换为中文数字。
- *
- * @param {string | number} value - 要转换的数字。
- * @returns {string} 转换后的中文数字。
- */
-export function numberToChinese(value: string | number): string {
-  const numberValue = typeof value === "number" ? value.toString() : value;
-  const chineseDigits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-  const chineseUnits = ["", "十", "百", "千", "万", "亿"];
-
-  const numArray = Array.from(numberValue).reverse();
-  const chineseArray = numArray.map((num, index) => {
-    const digit = parseInt(num);
-    const digitChinese = chineseDigits[digit];
-
-    if (digit === 0) {
-      // 如果当前数字为零，则不处理
-      return "";
-    }
-
-    const unit = index % 4;
-    const unitChinese = chineseUnits[unit];
-    const isUnitFirst = index === 0 || (index > 0 && digit !== 1 && unit === 0);
-
-    return isUnitFirst ? digitChinese + unitChinese : digitChinese;
-  });
-
-  return chineseArray.reverse().join("");
 }
 
 /**
@@ -161,30 +48,15 @@ export function camelToSnake(camelCase: string): string {
  * @returns {string} 转换后的小驼峰命名。
  */
 export function snakeToCamel(snakeCase: string): string {
+  // 处理前导下划线的特殊情况
+  if (snakeCase.startsWith("_")) {
+    const withoutLeadingUnderscore = snakeCase.substring(1);
+    return "_" + snakeToCamel(withoutLeadingUnderscore);
+  }
+
   return snakeCase.replace(/_([a-z])/g, function (_, char) {
     return char.toUpperCase();
   });
-}
-
-/**
- * 格式化数字，如果超过指定值则显示为指定值+。
- *
- * @param {string | number} value - 要格式化的数字。
- * @param {number} threshold - 阈值，超过该值则显示为该值+。默认值为 99。
- * @returns {string} 格式化后的字符串。
- */
-export function formatNumber(value: string | number, threshold = 99): string {
-  const num = Number(value);
-
-  if (isNaN(num)) {
-    return "";
-  }
-
-  if (num > threshold) {
-    return `${threshold}+`;
-  }
-
-  return String(num);
 }
 
 /**
@@ -202,3 +74,163 @@ export function capitalize<T>(word: T): T {
 
   return word;
 }
+
+// /**
+//  * 将字符串截断到指定长度，并添加省略号。
+//  *
+//  * @param {string} str - 要截断的字符串。
+//  * @param {number} maxLength - 最大长度。
+//  * @param {string} ellipsis - 省略号字符串，默认为 "..."。
+//  * @returns {string} 截断后的字符串。
+//  */
+// export function truncate(str: string, maxLength: number, ellipsis: string = "..."): string {
+//   if (!isString(str)) return "";
+//   if (str.length <= maxLength) return str;
+//   return str.slice(0, maxLength - ellipsis.length) + ellipsis;
+// }
+
+// /**
+//  * 将字符串填充到指定长度。
+//  *
+//  * @param {string} str - 要填充的字符串。
+//  * @param {number} length - 目标长度。
+//  * @param {string} padChar - 填充字符，默认为空格。
+//  * @param {boolean} padEnd - 是否在末尾填充，默认为 true。
+//  * @returns {string} 填充后的字符串。
+//  */
+// export function pad(str: string, length: number, padChar: string = " ", padEnd: boolean = true): string {
+//   if (!isString(str)) return "";
+//   if (str.length >= length) return str;
+//   const padString = padChar.repeat(length - str.length);
+//   return padEnd ? str + padString : padString + str;
+// }
+
+// /**
+//  * 检查字符串是否包含指定的子字符串（不区分大小写）。
+//  *
+//  * @param {string} str - 要检查的字符串。
+//  * @param {string} substring - 要查找的子字符串。
+//  * @returns {boolean} 如果包含子字符串，则返回 true，否则返回 false。
+//  */
+// export function containsIgnoreCase(str: string, substring: string): boolean {
+//   if (!isString(str) || !isString(substring)) return false;
+//   return str.toLowerCase().includes(substring.toLowerCase());
+// }
+
+// /**
+//  * 将字符串转换为 kebab-case（短横线分隔）。
+//  *
+//  * @param {string} str - 要转换的字符串。
+//  * @returns {string} 转换后的字符串。
+//  */
+// export function toKebabCase(str: string): string {
+//   if (!isString(str)) return "";
+//   return str
+//     .replace(/([a-z])([A-Z])/g, "$1-$2")
+//     .replace(/[\s_]+/g, "-")
+//     .toLowerCase();
+// }
+
+// /**
+//  * 将字符串转换为 PascalCase（帕斯卡命名）。
+//  *
+//  * @param {string} str - 要转换的字符串。
+//  * @returns {string} 转换后的字符串。
+//  */
+// export function toPascalCase(str: string): string {
+//   if (!isString(str)) return "";
+//   return str.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : "")).replace(/^(.)/, (c) => c.toUpperCase());
+// }
+
+// /**
+//  * 将字符串转换为 camelCase（驼峰命名）。
+//  *
+//  * @param {string} str - 要转换的字符串。
+//  * @returns {string} 转换后的字符串。
+//  */
+// export function toCamelCase(str: string): string {
+//   if (!isString(str)) return "";
+//   return str.replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : "")).replace(/^(.)/, (c) => c.toLowerCase());
+// }
+
+// /**
+//  * 将字符串中的 HTML 特殊字符转义。
+//  *
+//  * @param {string} str - 要转义的字符串。
+//  * @returns {string} 转义后的字符串。
+//  */
+// export function escapeHtml(str: string): string {
+//   if (!isString(str)) return "";
+//   return str
+//     .replace(/&/g, "&amp;")
+//     .replace(/</g, "&lt;")
+//     .replace(/>/g, "&gt;")
+//     .replace(/"/g, "&quot;")
+//     .replace(/'/g, "&#39;");
+// }
+
+// /**
+//  * 将转义的 HTML 特殊字符还原。
+//  *
+//  * @param {string} str - 要还原的字符串。
+//  * @returns {string} 还原后的字符串。
+//  */
+// export function unescapeHtml(str: string): string {
+//   if (!isString(str)) return "";
+//   return str
+//     .replace(/&amp;/g, "&")
+//     .replace(/&lt;/g, "<")
+//     .replace(/&gt;/g, ">")
+//     .replace(/&quot;/g, '"')
+//     .replace(/&#39;/g, "'");
+// }
+
+// /**
+//  * 移除字符串中的 HTML 标签。
+//  *
+//  * @param {string} str - 要处理的字符串。
+//  * @returns {string} 处理后的字符串。
+//  */
+// export function stripHtml(str: string): string {
+//   if (!isString(str)) return "";
+//   return str.replace(/<[^>]*>/g, "");
+// }
+
+// /**
+//  * 将字符串中的换行符转换为 HTML 的 <br> 标签。
+//  *
+//  * @param {string} str - 要转换的字符串。
+//  * @returns {string} 转换后的字符串。
+//  */
+// export function nl2br(str: string): string {
+//   if (!isString(str)) return "";
+//   return str.replace(/\n/g, "<br>");
+// }
+
+// /**
+//  * 生成指定长度的随机数字字符串。
+//  *
+//  * @param {number} length - 字符串长度。
+//  * @returns {string} 生成的随机数字字符串。
+//  */
+// export function randomDigits(length: number): string {
+//   if (length <= 0) return "";
+//   let result = "";
+//   for (let i = 0; i < length; i++) {
+//     result += Math.floor(Math.random() * 10);
+//   }
+//   return result;
+// }
+
+// /**
+//  * 检查字符串是否为有效的电子邮件地址。
+//  *
+//  * @param {string} email - 要检查的电子邮件地址。
+//  * @returns {boolean} 如果是有效的电子邮件地址，则返回 true，否则返回 false。
+//  */
+// export function isValidEmail(email: string): boolean {
+//   if (!isString(email)) return false;
+//   // 基本的电子邮件验证正则表达式
+//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//   return emailRegex.test(email);
+// }

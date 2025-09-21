@@ -1,7 +1,6 @@
 import pkg from "fs-extra";
 const { readFileSync, writeFileSync, mkdirSync, existsSync } = pkg;
 import prompts from "prompts";
-import { basename } from "node:path";
 
 (async function () {
   const questions = [
@@ -65,14 +64,14 @@ import { basename } from "node:path";
       },
     },
     keywords: [],
-    author: author || "",
+    author: author || "IBIN <ibin@qq.com>",
     license: "MIT",
     repository: {
       type: "git",
-      url: "git+https://github.com/T-Tuan/utilslib.git",
+      url: "git+https://github.com/IBINIBIN/utilslib",
     },
     bugs: {
-      url: "https://github.com/T-Tuan/utilslib.git/issues",
+      url: "https://github.com/IBINIBIN/utilslib/issues",
     },
     devDependencies: {},
     peerDependencies: {},
@@ -83,8 +82,8 @@ import { basename } from "node:path";
   // 写入 README.md
   writeFileSync(`${pkgDir}/README.md`, `# @utilslib/${packageName}\n`);
 
-  // 写入 src/index.js
-  writeFileSync(`${pkgDir}/src/index.js`, `// @utilslib/${packageName} 入口\n`);
+  // 写入 src/index.ts
+  writeFileSync(`${pkgDir}/src/index.ts`, `// @utilslib/${packageName} 入口\n`);
 
   console.log(`\n🎉 子包 @utilslib/${packageName} 创建成功！路径: ${pkgDir}`);
 })();

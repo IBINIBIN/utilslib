@@ -1,11 +1,12 @@
 {
-  "name": "@utilslib/dom",
-  "version": "0.0.16",
+  "name": "@utilslib/node",
+  "version": "0.0.1",
   "private": false,
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/types/index.d.ts",
@@ -16,17 +17,7 @@
       "import": "./dist/index.esm.js"
     }
   },
-  "dependencies": {
-    "@utilslib/core": "workspace:*",
-    "@utilslib/types": "workspace:^",
-    "clipboard": "^2.0.11",
-    "raf": "^3.4.1"
-  },
-  "keywords": [
-    "javascript",
-    "util",
-    "dom"
-  ],
+  "keywords": [],
   "author": "IBIN <ibin@qq.com>",
   "license": "MIT",
   "repository": {
@@ -36,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/IBINIBIN/utilslib/issues"
   },
-  "devDependencies": {
-    "@types/raf": "^3.4.3"
-  }
+  "devDependencies": {},
+  "peerDependencies": {},
+  "dependencies": {}
 }
