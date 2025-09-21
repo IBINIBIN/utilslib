@@ -1,5 +1,9 @@
 [
   {
+    "text": "constants",
+    "link": "/@utilslib/constants/index"
+  },
+  {
     "text": "core",
     "link": "/@utilslib/core/index"
   },
@@ -12,11 +16,19 @@
     "link": "/@utilslib/types/index"
   },
   {
+    "text": "uniapp",
+    "link": "/@utilslib/uniapp/index"
+  },
+  {
     "text": "vue2",
     "link": "/@utilslib/vue2/index"
   },
   {
     "text": "vue3",
     "link": "/@utilslib/vue3/index"
+  },
+  {
+    "text": "web",
+    "link": "/@utilslib/web/index"
   }
 ]

@@ -21,13 +21,13 @@
     "util",
     "types"
   ],
-  "author": "ibin <ibin@qq.com>",
+  "author": "IBIN <ibin@qq.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/T-Tuan/utilslib.git"
+    "url": "git+https://github.com/IBINIBIN/utilslib"
   },
   "bugs": {
-    "url": "https://github.com/T-Tuan/utilslib.git/issues"
+    "url": "https://github.com/IBINIBIN/utilslib/issues"
   }
 }

@@ -1,100 +1,12 @@
 /**
- * 确保给定数字在指定范围内。
- *
- * @param {number} numberToClamp - 要限制的数字。
- * @param {[number, number]} range - 范围，表示为 [min, max] 数组。
- * @returns {number} 在指定范围内的值。
- */
-export function clampNumberWithinRange(numberToClamp: number, range: [number, number]): number {
-  const [min, max] = range;
-  return Math.max(min, Math.min(numberToClamp, max));
-}
-
-/**
  * 将值或值数组转换为数组。
  *
  * @type {<T>(value: T | T[]) => T[]}
  * @param {T | T[]} value - 要转换的值或值数组。
  * @returns {T[]} 转换后的数组。
- * @example
- * const result = toArray("value"); // ['value']
- * const resultArray = toArray(["value1", "value2"]); // ['value1', 'value2']
  */
 export function toArray<T>(value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value];
-}
-
-type OnlyObject = {
-  [key: string]: any;
-} & {
-  [key: string]: unknown;
-};
-
-/**
- * 根据指定属性值进行过滤列表。
- *
- * @template T - 列表中元素的类型。
- * @template R - 属性的键名。
- * @template B - 当T为对象类型时，U为R的类型；否则为undefined。
- * @param {T[]} list - 要过滤的列表。
- * @param {T extends OnlyObject
- *   ? {
- *       property: R;
- *       includes?: unknown[];
- *       excludes?: unknown[];
- *     }
- *   : Partial<{
- *       property: undefined;
- *       includes: unknown[];
- *       excludes: unknown[];
- *     }>} opts - 过滤选项，包括要过滤的属性名、包含的值数组和排除的值数组。
- * @returns {T[]} 过滤后的列表。
- * @type {<
- *   T,
- *   R extends keyof T,
- *   B = T extends OnlyObject ? R : undefined
- * >(
- *   list: T[],
- *   opts: T extends OnlyObject
- *     ? {
- *         property: R;
- *         includes?: unknown[];
- *         excludes?: unknown[];
- *       }
- *     : Partial<{
- *         property: undefined;
- *         includes: unknown[];
- *         excludes: unknown[];
- *       }>
- * ) => T[]}
- */
-export function filterList<T, R extends keyof T, B = T extends OnlyObject ? R : undefined>(
-  list: T[],
-  opts: T extends OnlyObject
-    ? {
-        property: R;
-        includes?: unknown[];
-        excludes?: unknown[];
-      }
-    : Partial<{
-        property: undefined;
-        includes: unknown[];
-        excludes: unknown[];
-      }>,
-): T[] {
-  const { property, includes = [], excludes = [] } = opts;
-
-  return list.filter((item) => {
-    const val = property ? item[property] : item;
-    if (includes?.length && excludes?.length) {
-      return includes.includes(val) && !excludes.includes(val);
-    } else if (includes?.length) {
-      return includes.includes(val);
-    } else if (excludes?.length) {
-      return !excludes.includes(val);
-    }
-    return true;
-  });
 }
 
 /**
@@ -210,18 +122,4 @@ export function getArraySubset<T, K extends keyof T>(A: T[], B: T[], key?: K): T
     return A.filter((item) => universeSet.has(item[key]));
   }
   return A.filter((item) => B.includes(item));
-}
-
-/**
- * (A⊆U) A是U的子集
- *
- * @template T - 数组元素类型
- * @template K - 用于判断的属性键名类型
- * @param {T[]} A - 待判断的子集数组
- * @param {T[]} B - 全集数组
- * @param {K} [key] - 可选的用于判断的属性键名
- * @returns {boolean} 如果是子集返回true，否则返回false
- */
-export function isSubset<T, K extends keyof T>(A: T[], B: T[], key?: K): boolean {
-  return Boolean(getArraySubset(A, B, key).length);
 }

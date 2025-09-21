@@ -1,9 +1,10 @@
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import clear from "rollup-plugin-clear";
 import esbuild from "rollup-plugin-esbuild";
 import resolve from "@rollup/plugin-node-resolve";
+import json from "@rollup/plugin-json";
 import alias from "@rollup/plugin-alias";
 import dts from "rollup-plugin-dts";
 
@@ -16,10 +17,28 @@ const r = (...url) => path.resolve(dirName, ...url);
 
 /** 所有子包的入口文件 */
 const globalEnterFile = globSync("packages/*/src/index.ts");
+const packageAliasMap = globalEnterFile.reduce((prev, cur) => {
+  const { name } = JSON.parse(readFileSync(getPackageJsonPath(cur), "utf-8"));
+  return { ...prev, [name]: cur };
+}, {});
 
-/** 获取子包的dist文件夹路径 */
-const getPackageDistPath = (url) => path.resolve(url, "../..", "dist");
-const getPackageLibPath = (url) => path.resolve(url, "../..", "lib");
+function getPackageJsonPath(url) {
+  return path.resolve(url, "../..", "package.json");
+}
+function getPackageDistPath(url) {
+  return path.resolve(url, "../..", "dist");
+}
+function getPackageLibPath(url) {
+  return path.resolve(url, "../..", "lib");
+}
+function getTsconfigPath(subPackageName) {
+  const subPackageTsconfigPath = path.join(process.cwd(), "packages", subPackageName, "tsconfig.json");
+
+  if (existsSync(subPackageTsconfigPath)) {
+    return subPackageTsconfigPath;
+  }
+  return path.resolve(process.cwd(), "tsconfig.json");
+}
 
 const createOutputList = (name, enter) => {
   const outputConfigs = {
@@ -57,8 +76,9 @@ const createOutputList = (name, enter) => {
 };
 
 const createConfig = (enter) => {
-  const { name } = JSON.parse(readFileSync(path.resolve(getPackageDistPath(enter), "..", "package.json"), "utf-8"));
+  const { name } = JSON.parse(readFileSync(getPackageJsonPath(enter), "utf-8"));
   const [packageName, subPackageName] = name.slice(1).split("/");
+  const tsconfigPath = getTsconfigPath(subPackageName);
 
   function letterUp(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
@@ -68,10 +88,9 @@ const createConfig = (enter) => {
 
   const basePlugins = [
     resolve(),
+    json(),
     alias({
-      entries: {
-        "@utilslib/core": "packages/core/src/index.ts",
-      },
+      entries: packageAliasMap,
     }),
   ];
 
@@ -86,6 +105,7 @@ const createConfig = (enter) => {
       plugins: [
         ...basePlugins,
         typescript({
+          tsconfig: tsconfigPath,
           target: "ES6",
           sourceMap: false,
         }),
@@ -105,6 +125,7 @@ const createConfig = (enter) => {
       plugins: [
         ...basePlugins,
         typescript({
+          tsconfig: tsconfigPath,
           target: "ESNext",
           sourceMap: false,
         }),
@@ -127,10 +148,13 @@ const createConfig = (enter) => {
         },
       ],
       treeshake: false,
-      plugins: [dts()],
+      plugins: [...basePlugins, dts()],
     },
   ];
 };
 
 /** @type {import('rollup').RollupOptions} */
-export default globalEnterFile.map((enter) => createConfig(enter)).flat(Infinity);
+export default globalEnterFile
+  .filter((enter) => enter.includes("uniapp"))
+  .map((enter) => createConfig(enter))
+  .flat(Infinity);
