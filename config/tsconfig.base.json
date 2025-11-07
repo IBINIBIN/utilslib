@@ -1,13 +1,32 @@
 {
   "compilerOptions": {
-    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
-    "declarationMap": true /* Create sourcemaps for d.ts files. */,
-    "sourceMap": true /* Create source map files for emitted JavaScript files. */,
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "noImplicitAny": true /* Enable error reporting for expressions and declarations with an implied 'any' type. */,
-    "strictNullChecks": true /* When type checking, take into account 'null' and 'undefined'. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+    "target": "esnext",
+    "module": "ESNext",
+    "rootDir": "../",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@utilslib/types": ["../packages/types/src"],
+      "@utilslib/core": ["../packages/core/src"],
+      "@utilslib/dom": ["../packages/dom/src"],
+      "@utilslib/vue2": ["../packages/vue2/src"],
+      "@utilslib/vue3": ["../packages/vue3/src"],
+      "@utilslib/web": ["../packages/web/src"]
+    },
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": "lib",
+    "importsNotUsedAsValues": "remove",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true
   }
 }

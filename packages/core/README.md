@@ -29,4 +29,4 @@ script标签导入方式
 <script src="https://unpkg.com/@utilslib/core/dist/index.global.js"></script>
 ```
 
-[点击这里即可查看详细文档](https://t-tuan.github.io/utilslib/modules/_utilslib_core.html)
+[点击这里即可查看详细文档](https://IBINIBIN.github.io/utilslib/modules/_utilslib_core.html)

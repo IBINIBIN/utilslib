@@ -32,12 +32,7 @@ function getPackageLibPath(url) {
   return path.resolve(url, "../..", "lib");
 }
 function getTsconfigPath(subPackageName) {
-  const subPackageTsconfigPath = path.join(process.cwd(), "packages", subPackageName, "tsconfig.json");
-
-  if (existsSync(subPackageTsconfigPath)) {
-    return subPackageTsconfigPath;
-  }
-  return path.resolve(process.cwd(), "tsconfig.json");
+  return path.join(process.cwd(), "packages", subPackageName, "tsconfig.json");
 }
 
 const createOutputList = (name, enter) => {
@@ -97,6 +92,22 @@ const createConfig = (enter) => {
   const external = (id) => /node_modules/.test(id) && !id.includes("tslib");
 
   return [
+    // 构建d.ts
+    {
+      input: enter,
+      output: [
+        {
+          file: path.resolve(getPackageDistPath(enter), `types/index.d.ts`),
+          format: "es",
+        },
+        {
+          file: path.resolve(getPackageLibPath(enter), `types/index.d.ts`),
+          format: "es",
+        },
+      ],
+      treeshake: false,
+      plugins: [...basePlugins, dts()],
+    },
     // 构建生产包
     {
       input: enter,
@@ -106,8 +117,7 @@ const createConfig = (enter) => {
         ...basePlugins,
         typescript({
           tsconfig: tsconfigPath,
-          target: "ES6",
-          sourceMap: false,
+          declaration: false,
         }),
         esbuild({
           minify: process.env.NODE_ENV === "production",
@@ -126,35 +136,15 @@ const createConfig = (enter) => {
         ...basePlugins,
         typescript({
           tsconfig: tsconfigPath,
-          target: "ESNext",
-          sourceMap: false,
+          declaration: false,
         }),
         clear({
           targets: [getPackageLibPath(enter)],
         }),
       ],
     },
-    // 构建d.ts
-    {
-      input: enter,
-      output: [
-        {
-          file: path.resolve(getPackageDistPath(enter), `types/index.d.ts`),
-          format: "es",
-        },
-        {
-          file: path.resolve(getPackageLibPath(enter), `types/index.d.ts`),
-          format: "es",
-        },
-      ],
-      treeshake: false,
-      plugins: [...basePlugins, dts()],
-    },
   ];
 };
 
 /** @type {import('rollup').RollupOptions} */
-export default globalEnterFile
-  .filter((enter) => enter.includes("uniapp"))
-  .map((enter) => createConfig(enter))
-  .flat(Infinity);
+export default globalEnterFile.map((enter) => createConfig(enter)).flat(Infinity);

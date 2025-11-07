@@ -1,12 +1,11 @@
 {
   "name": "@utilslib/types",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "private": false,
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/types/index.d.ts",
@@ -25,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/IBINIBIN/utilslib"
+    "url": "git+https://github.com/IBINIBIN/utilslib.git"
   },
   "bugs": {
     "url": "https://github.com/IBINIBIN/utilslib/issues"
