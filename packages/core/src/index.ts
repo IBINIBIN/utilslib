@@ -12,3 +12,4 @@ export * from "./validator";
 export * from "./number";
 export * from "./file";
 export * from "./enum";
+export * from "./collection";

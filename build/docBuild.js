@@ -10,6 +10,7 @@ import { extractFunctionInfo } from "./functionInfoExtractor.js";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 const ROOT_PATH = path.join(__dirname, "..");
+const DOC_PATH = path.join(ROOT_PATH, "docsPress", "docs");
 
 const ORGANIZATION_NAME = "@utilslib";
 
@@ -129,12 +130,43 @@ function generateNav(packages) {
     link: `/${pkg.name}/index`,
   }));
 
-  const vitepressPath = path.join(ROOT_PATH, "docsPress/docs/.vitepress");
-  const navJsonPath = path.join(vitepressPath, "nav.json");
-
-  fs.mkdirpSync(vitepressPath);
+  const navJsonPath = path.join(DOC_PATH, ".vitepress", "nav.json");
+  fs.ensureFileSync(navJsonPath);
   fs.writeFileSync(navJsonPath, JSON.stringify(nav, null, 2));
   console.log(`Navigation JSON written to ${navJsonPath}`);
+}
+
+function generateHomePage(packages) {
+  const homePagePath = path.join(DOC_PATH, "index.md");
+  fs.ensureFileSync(homePagePath);
+  fs.writeFileSync(
+    homePagePath,
+    `---
+layout: home
+
+hero:
+  name: "utilslib"
+  text: "工具库"
+  actions:
+    - theme: alt
+      text: GitHub
+      link: https://github.com/IBINIBIN/utilslib
+    - theme: brand
+      text: VS Code 下载
+      link: https://marketplace.visualstudio.com/items?itemName=Jiabin.fe-integration
+
+features:
+${packages
+  .map(
+    (pkg) => `  - title: ${pkg.packageName}  
+    link: "${pkg.name}/index"`,
+  )
+  .join("\n")}
+---
+
+![NPM License](https://img.shields.io/npm/l/%40utilslib%2Fcore)
+`,
+  );
 }
 
 /**
@@ -155,10 +187,8 @@ function generateSidebar(packages) {
     });
   }
 
-  const vitepressPath = path.join(ROOT_PATH, "docsPress/docs/.vitepress");
-  const sidebarPath = path.join(vitepressPath, "sidebar.json");
-
-  fs.mkdirpSync(vitepressPath);
+  const sidebarPath = path.join(DOC_PATH, ".vitepress", "sidebar.json");
+  fs.ensureFileSync(sidebarPath);
   fs.writeFileSync(sidebarPath, JSON.stringify(sidebarList, null, 2));
   console.log(`Sidebar JSON written to ${sidebarPath}`);
 }
@@ -406,7 +436,7 @@ async function generateFunctionDoc(functionName, packageInfo, tsSnippetsJson, js
       for (const file of srcFiles) {
         const content = fs.readFileSync(path.join(ROOT_PATH, file), "utf-8");
         if (content.includes(`export function ${functionName}`) || content.includes(`export const ${functionName}`)) {
-          sourceUrl = `https://github.com/T-Tuan/utilslib/blob/main/${file}`;
+          sourceUrl = `https://github.com/IBINIBIN/utilslib/blob/main/${file}`;
           break;
         }
       }
@@ -461,6 +491,7 @@ async function generateDocs() {
   console.log(`Found ${packages.length} packages`);
 
   // 生成导航和侧边栏
+  generateHomePage(packages);
   generateNav(packages);
   generateSidebar(packages);
 

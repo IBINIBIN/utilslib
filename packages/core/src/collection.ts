@@ -1,21 +1,3 @@
-type ArrayIteratee<T> = (value: T, index: number, collection: T[]) => boolean | void;
-type MapIteratee<K, V> = (value: V, key: K, collection: Map<K, V>) => boolean | void;
-type SetIteratee<T> = (value: T, value2: T, collection: Set<T>) => boolean | void;
-type ObjectIteratee<T> = (value: T, key: string, collection: Record<string, T>) => boolean | void;
-
-export function forEach<T>(collection: T[], iteratee: ArrayIteratee<T>): T[];
-export function forEach<K, V>(collection: Map<K, V>, iteratee: MapIteratee<K, V>): Map<K, V>;
-export function forEach<T>(collection: Set<T>, iteratee: SetIteratee<T>): Set<T>;
-export function forEach<T>(collection: Record<string, T>, iteratee: ObjectIteratee<T>): Record<string, T>;
-export function forEach(collection: null | undefined, iteratee: any): null | undefined;
-export function forEach(collection: any, iteratee: any): any {
-  if (collection == null) return collection;
-  for (const [key, value] of entries(collection)) {
-    if (iteratee(value, key, collection) === false) break;
-  }
-  return collection;
-}
-
 /**
  * 通用的条目迭代器
  * - Map: [key, value]
@@ -35,6 +17,24 @@ export function* entries<T, K, V>(
   } else if (data) {
     yield* Object.entries(data) as [string, any][];
   }
+}
+
+type ArrayIteratee<T> = (value: T, index: number, collection: T[]) => boolean | void;
+type MapIteratee<K, V> = (value: V, key: K, collection: Map<K, V>) => boolean | void;
+type SetIteratee<T> = (value: T, value2: T, collection: Set<T>) => boolean | void;
+type ObjectIteratee<T> = (value: T, key: string, collection: Record<string, T>) => boolean | void;
+
+export function forEach<T>(collection: T[], iteratee: ArrayIteratee<T>): T[];
+export function forEach<K, V>(collection: Map<K, V>, iteratee: MapIteratee<K, V>): Map<K, V>;
+export function forEach<T>(collection: Set<T>, iteratee: SetIteratee<T>): Set<T>;
+export function forEach<T>(collection: Record<string, T>, iteratee: ObjectIteratee<T>): Record<string, T>;
+export function forEach(collection: null | undefined, iteratee: any): null | undefined;
+export function forEach(collection: any, iteratee: any): any {
+  if (collection == null) return collection;
+  for (const [key, value] of entries(collection)) {
+    if (iteratee(value, key, collection) === false) break;
+  }
+  return collection;
 }
 
 function filterData<T extends object, K extends keyof T>(

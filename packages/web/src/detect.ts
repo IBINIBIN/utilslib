@@ -50,11 +50,14 @@ export const IS_IE_BROWSER = BROWSER_TYPE === "ie";
 /** 平板设备 */
 export const IS_TABLET = isTablet();
 
+/** 手机设备 */
+export const IS_PHONE = isPhone();
+
 /** 移动设备 */
-export const IS_MOBILE = isMobile();
+export const IS_MOBILE = IS_PHONE || IS_TABLET;
 
 /** 桌面设备 */
-export const IS_DESKTOP = IS_BROWSER && !IS_MOBILE && !IS_TABLET;
+export const IS_DESKTOP = !IS_MOBILE;
 
 // ============ 触摸支持检测 ============
 /** 支持触摸事件 */
@@ -74,15 +77,15 @@ export const SUPPORTS_WEBGL = supportsWebGL();
 export const SUPPORTS_WEB_ASSEMBLY = typeof WebAssembly !== "undefined";
 
 /** 支持 Service Worker */
-export const SUPPORTS_SERVICE_WORKER = IS_BROWSER && "serviceWorker" in navigator;
+export const SUPPORTS_SERVICE_WORKER = "serviceWorker" in navigator;
 
 // ============ 屏幕信息 ============
 /** Retina 高清屏 */
-export const IS_RETINA = IS_BROWSER && window.devicePixelRatio > 1;
+export const IS_RETINA = window.devicePixelRatio > 1;
 
 // ============ 语言检测 ============
 /** 浏览器语言 */
-export const LANGUAGE = IS_BROWSER ? navigator.language || (navigator as any).userLanguage || "en" : "en";
+export const LANGUAGE = navigator.language || (navigator as any).userLanguage || "en";
 
 // ============ 动态检测方法 ============
 
@@ -91,7 +94,6 @@ export const LANGUAGE = IS_BROWSER ? navigator.language || (navigator as any).us
  * 用户可能在运行时切换系统主题
  */
 export function isDarkMode(): boolean {
-  if (!IS_BROWSER) return false;
   return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
@@ -100,7 +102,7 @@ export function isDarkMode(): boolean {
  * 网络状态会实时变化
  */
 export function isOnline(): boolean {
-  return IS_BROWSER ? navigator.onLine : true;
+  return navigator.onLine;
 }
 
 /**
@@ -108,7 +110,7 @@ export function isOnline(): boolean {
  * 连接类型会随网络环境变化
  */
 export function getConnectionType(): string {
-  if (!IS_BROWSER || !("connection" in navigator)) return "unknown";
+  if (!("connection" in navigator)) return "unknown";
 
   const connection =
     (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
@@ -120,8 +122,6 @@ export function getConnectionType(): string {
  * 窗口大小可能会变化
  */
 export function getScreenInfo() {
-  if (!IS_BROWSER) return null;
-
   return {
     width: window.screen.width,
     height: window.screen.height,
@@ -138,8 +138,6 @@ export function getScreenInfo() {
  * 视口大小会随窗口调整而变化
  */
 export function getViewportInfo() {
-  if (!IS_BROWSER) return null;
-
   return {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -171,8 +169,6 @@ function isWebWorker() {
  * @returns 操作系统类型: ios | android | macos | windows | linux | unknown
  */
 function getOSType() {
-  if (!IS_BROWSER) return "unknown";
-
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = (navigator.platform || "").toLowerCase();
 
@@ -190,8 +186,6 @@ function getOSType() {
  * @returns 浏览器类型: chrome | safari | firefox | edge | opera | ie | unknown
  */
 function getBrowserType() {
-  if (!IS_BROWSER) return "unknown";
-
   const userAgent = navigator.userAgent.toLowerCase();
 
   if (/edg/.test(userAgent)) return "edge";
@@ -209,19 +203,17 @@ function getBrowserType() {
  * @returns 平板设备判断结果
  */
 function isTablet() {
-  if (!IS_BROWSER) return false;
   const userAgent = navigator.userAgent.toLowerCase();
   return /ipad|android(?!.*mobile)|tablet/.test(userAgent);
 }
 
 /**
- * 检测移动设备
- * @returns 移动设备判断结果
+ * 检测手机设备
+ * @returns 手机设备判断结果
  */
-function isMobile() {
-  if (!IS_BROWSER) return false;
+function isPhone() {
   const userAgent = navigator.userAgent.toLowerCase();
-  return /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/.test(userAgent) && !isTablet;
+  return /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/.test(userAgent) && !IS_TABLET;
 }
 
 /**
@@ -229,7 +221,6 @@ function isMobile() {
  * @returns 触摸事件支持判断结果
  */
 function supportsTouch() {
-  if (!IS_BROWSER) return false;
   return "ontouchstart" in window || navigator.maxTouchPoints > 0;
 }
 
@@ -238,7 +229,6 @@ function supportsTouch() {
  * @returns LocalStorage 支持判断结果
  */
 function supportsLocalStorage() {
-  if (!IS_BROWSER) return false;
   try {
     const test = "__localStorage_test__";
     localStorage.setItem(test, test);
@@ -254,7 +244,6 @@ function supportsLocalStorage() {
  * @returns SessionStorage 支持判断结果
  */
 function supportsSessionStorage() {
-  if (!IS_BROWSER) return false;
   try {
     const test = "__sessionStorage_test__";
     sessionStorage.setItem(test, test);
@@ -270,8 +259,6 @@ function supportsSessionStorage() {
  * @returns WebGL 支持判断结果
  */
 function supportsWebGL() {
-  if (!IS_BROWSER) return false;
-
   try {
     const canvas = document.createElement("canvas");
     return !!(canvas.getContext("webgl") || canvas.getContext("experimental-webgl"));
