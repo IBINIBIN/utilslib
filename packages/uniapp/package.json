@@ -1,6 +1,6 @@
 {
   "name": "@utilslib/uniapp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "publishConfig": {
     "access": "public",
@@ -17,7 +17,9 @@
       "import": "./dist/index.esm.js"
     }
   },
-  "keywords": ["uniapp"],
+  "keywords": [
+    "uniapp"
+  ],
   "author": "",
   "license": "MIT",
   "repository": {
