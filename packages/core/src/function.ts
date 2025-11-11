@@ -22,38 +22,22 @@ export function once<F extends AnyFunction>(fn: F) {
   };
 }
 
-type UnpackPromise<T> = T extends Promise<infer U> ? U : T;
-
 /**
- * 通用错误捕获函数，用于执行可能会抛出异常的函数，并捕获异常信息。
+ * 通用错误捕获包装器，返回一个包装后的函数，该函数执行时会自动捕获异常。
  *
- * @type {<F extends AnyFunction, R = UnpackPromise<ReturnType<F>>>(
- *   this: unknown,
- *   fn: F
- * ) => Promise<[0, R, null] | [1, null, unknown]>}
- * @param {F} fn - 可能会抛出异常的函数。
- * @returns {Promise<[0, R, null] | [1, null, unknown]>} 返回一个元组，包含错误标识、函数执行结果或 null 、异常信息或 null。
+ * @param {F} fn - 需要包装的函数。
+ * @returns 返回一个新函数，执行时返回元组：[错误标识, 结果或null, 异常或null]。
  */
-export async function catchError<F extends AnyFunction, R = UnpackPromise<ReturnType<F>>>(
-  this: unknown,
+export function catchError<F extends AnyFunction>(
   fn: F,
-  ...args: Parameters<F>
-): Promise<[0, R, null] | [1, null, unknown]> {
-  let data: R | null;
-  let err: 0 | 1;
-  let errMsg: unknown | null;
-
-  try {
-    data = await fn.apply(this, args);
-    err = 0;
-    errMsg = null;
-    return [err, data as R, errMsg as null];
-  } catch (error) {
-    data = null;
-    err = 1;
-    errMsg = error;
-    return [err, data, errMsg];
-  }
+): (this: unknown, ...args: Parameters<F>) => Promise<[0, Awaited<ReturnType<F>>, null] | [1, null, unknown]> {
+  return async function (this: unknown, ...args: Parameters<F>) {
+    try {
+      return [0, await fn.apply(this, args), null];
+    } catch (error) {
+      return [1, null, error];
+    }
+  };
 }
 
 /**
