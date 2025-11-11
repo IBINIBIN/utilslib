@@ -1,14 +1,14 @@
 import path, { resolve } from "node:path";
 import fs from "fs-extra";
-import { URL } from "node:url";
+import { URL, fileURLToPath } from "node:url";
 import { format } from "prettier";
-import { v4 as uuid } from "uuid";
 import { glob } from "glob";
 
 import { createSandboxLink, generateSandboxIframe } from "./docBuildLogic.js";
 import { extractFunctionInfo } from "./functionInfoExtractor.js";
 
-const __dirname = new URL(".", import.meta.url).pathname;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT_PATH = path.join(__dirname, "..");
 const DOC_PATH = path.join(ROOT_PATH, "docsPress", "docs");
 
