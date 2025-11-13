@@ -11,7 +11,7 @@ const gitignorePath = path.resolve(__dirname, ".gitignore");
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-  { ignores: ["**/demo-codesandbox"] },
+  { ignores: ["**/demo-codesandbox", "**/__tests__/**"] },
   includeIgnoreFile(gitignorePath),
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   ...tseslint.configs.recommended,

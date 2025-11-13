@@ -28,5 +28,6 @@
     "alwaysStrict": true,
     "noImplicitReturns": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["**/__tests__/**"]
 }
