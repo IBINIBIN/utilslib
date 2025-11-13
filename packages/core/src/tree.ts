@@ -240,7 +240,7 @@ export function flattenTreeArray<
     const data = node;
 
     if (leaf || includeParent) {
-      result.push(Object.assign(data, { level, parentId: parent?.[idAttr] }));
+      result.push(Object.assign({}, data, { level, parentId: parent?.[idAttr] }) as R);
     }
   });
 

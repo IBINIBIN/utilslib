@@ -16,3 +16,6 @@ docsPress/docs/.vitepress/nav.json
 docsPress/docs/.vitepress/sidebar.json
 docsPress/docs/.vitepress/cache
 docsPress/docs/.vitepress/dist
+
+# Claude Code
+.claude/
