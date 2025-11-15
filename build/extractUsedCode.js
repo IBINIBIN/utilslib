@@ -548,10 +548,35 @@ export function extractUsedCode(filePath, externalVariables) {
               const sourceProject = new Project();
               const sourceFile = sourceProject.createSourceFile("source.ts", sourceCode);
 
-              // 获取所有函数声明节点
-              const allFuncDecls = sourceFile
-                .getDescendantsOfKind(SyntaxKind.FunctionDeclaration)
-                .filter((func) => func.getName() === funcName);
+              // 获取所有顶级导出函数声明节点（排除内部嵌套函数和非导出函数）
+              const allFuncDecls = sourceFile.getDescendantsOfKind(SyntaxKind.FunctionDeclaration).filter((func) => {
+                try {
+                  // 基本检查：函数名匹配
+                  if (func.getName() !== funcName) return false;
+
+                  // 获取父节点和导出信息
+                  const parent = func.getParent();
+                  if (!parent) return false;
+
+                  const parentKind = parent.getKind();
+                  const hasExport = func.hasExportKeyword?.() || false;
+                  const isDefault = func.isDefaultExport?.() || false;
+
+                  // 必须是顶级声明
+                  if (parentKind !== SyntaxKind.SourceFile) return false;
+
+                  // 必须是导出的（有export关键字或者是默认导出）
+                  if (!hasExport && !isDefault) return false;
+
+                  // 额外安全检查
+                  if (func.wasForgotten()) return false;
+
+                  return true;
+                } catch (error) {
+                  console.warn(`Warning: Error checking function declaration for ${funcName}: ${error.message}`);
+                  return false;
+                }
+              });
 
               if (allFuncDecls.length > 0) {
                 // 获取所有重载和实现的完整文本
