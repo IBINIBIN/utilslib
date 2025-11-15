@@ -534,7 +534,34 @@ export function extractUsedCode(filePath, externalVariables) {
               }
             }
           } else {
-            text = declaration.getFullText();
+            // 对于函数声明，需要获取完整的函数体，包括所有重载和实现
+            if (
+              declaration.getKind() === SyntaxKind.FunctionDeclaration ||
+              declaration.getFirstAncestorByKind(SyntaxKind.FunctionDeclaration)
+            ) {
+              // 找到包含所有重载和实现的函数名
+              let funcName = declaration.getName?.() || declaration.getText();
+
+              // 在源文件中查找所有同名的函数声明（重载）和实现
+              const sourceFilePath = filePath;
+              const sourceCode = readFileContent(sourceFilePath);
+              const sourceProject = new Project();
+              const sourceFile = sourceProject.createSourceFile("source.ts", sourceCode);
+
+              // 获取所有函数声明节点
+              const allFuncDecls = sourceFile
+                .getDescendantsOfKind(SyntaxKind.FunctionDeclaration)
+                .filter((func) => func.getName() === funcName);
+
+              if (allFuncDecls.length > 0) {
+                // 获取所有重载和实现的完整文本
+                text = allFuncDecls.map((fd) => fd.getFullText()).join("\n");
+              } else {
+                text = declaration.getFullText();
+              }
+            } else {
+              text = declaration.getFullText();
+            }
           }
 
           text = text.replace(/^[\n|\r]*|[\n|\r]*$/g, "");
